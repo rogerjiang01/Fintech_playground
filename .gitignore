@@ -1,0 +1,25 @@
+# macOS 系统檔案
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# 編輯器與 IDE 設定檔
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# 暫存檔與日誌
+*.log
+*.tmp
+*.bak
+*.swp
+
+# 如果不需要上傳測試原型或參考素材：
+uitest/
+iTrader Design System/
+03-介面規範.md
+元大期貨攤位遊戲_專案交接文件.md
+Fintech_playground.md
+index_backup.html

@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="zh-TW">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+        <title>元大期貨 iTRADER｜AI 全球市場連線 (Cyber-HUD Ver.2)</title>
+
+        <!-- Tailwind CSS CDN -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            brand: {
+                                navy: "#030b18",
+                                card: "#08172c",
+                                blue: "#0066cc",
+                                cyan: "#00e5ff",
+                                orange: "#ff7700",
+                                emerald: "#00f0a0",
+                                rose: "#ff3366",
+                            },
+                        },
+                        fontFamily: {
+                            hud: ["Orbitron", "sans-serif"],
+                            mono: ["JetBrains Mono", "monospace"],
+                            sans: ["Noto Sans TC", "Inter", "-apple-system", "sans-serif"],
+                        },
+                    },
+                },
+            };
+        </script>
+
+        <!-- Google Fonts -->
+        <link rel="preconnect" href="https://fonts.googleapis.com" />
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+        <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;600;700;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet" />
+
+        <style>
+            * {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+                -webkit-tap-highlight-color: transparent;
+                user-select: none;
+            }
+
+            body {
+                background: #02060f;
+                color: #e2e8f0;
+                font-family: "Noto Sans TC", "Inter", sans-serif;
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: flex-start;
+                overflow-x: hidden;
+            }
+
+            /* Ambient Spatial Glow Background */
+            .ambient-mesh {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 0;
+                background: radial-gradient(circle at 20% 15%, rgba(0, 110, 255, 0.18) 0%, transparent 45%), radial-gradient(circle at 80% 85%, rgba(0, 229, 255, 0.12) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(255, 119, 0, 0.06) 0%, transparent 60%);
+            }
+
+            /* Subtle Cyber HUD Grid Overlay */
+            .hud-grid-overlay {
+                position: fixed;
+                inset: 0;
+                pointer-events: none;
+                z-index: 1;
+                background-image: linear-gradient(rgba(0, 229, 255, 0.02) 1px, transparent 1px), linear-gradient(90deg, rgba(0, 229, 255, 0.02) 1px, transparent 1px);
+                background-size: 32px 32px;
+            }
+
+            /* Glassmorphism Surface (Style #55 + #03) */
+            .glass-surface {
+                background: rgba(8, 23, 44, 0.72);
+                backdrop-filter: blur(20px);
+                -webkit-backdrop-filter: blur(20px);
+                border: 1px solid rgba(0, 229, 255, 0.22);
+                box-shadow:
+                    0 10px 30px -10px rgba(0, 0, 0, 0.7),
+                    inset 0 1px 1px 0 rgba(255, 255, 255, 0.1);
+            }
+
+            .glass-card-subtle {
+                background: rgba(5, 16, 32, 0.65);
+                backdrop-filter: blur(16px);
+                border: 1px solid rgba(0, 140, 255, 0.25);
+            }
+
+            /* HUD Tactical Brackets (Style #51) */
+            .hud-bracket-box {
+                position: relative;
+            }
+            .hud-bracket-box::before,
+            .hud-bracket-box::after {
+                content: "";
+                position: absolute;
+                width: 8px;
+                height: 8px;
+                pointer-events: none;
+            }
+            .hud-bracket-box::before {
+                top: -1px;
+                left: -1px;
+                border-top: 2px solid #00e5ff;
+                border-left: 2px solid #00e5ff;
+            }
+            .hud-bracket-box::after {
+                bottom: -1px;
+                right: -1px;
+                border-bottom: 2px solid #ff7700;
+                border-right: 2px solid #ff7700;
+            }
+
+            /* Phone Device Mockup Container */
+            .device-container {
+                width: 100%;
+                max-width: 420px;
+                min-height: 850px;
+                height: 100vh;
+                max-height: 900px;
+                position: relative;
+                z-index: 10;
+                display: flex;
+                flex-direction: column;
+                background: #040d1a;
+                overflow: hidden;
+                border: 1px solid rgba(0, 229, 255, 0.28);
+                transition: all 0.3s ease;
+            }
+
+            @media (min-width: 520px) {
+                body.mockup-mode .device-container {
+                    margin-top: 16px;
+                    margin-bottom: 30px;
+                    border-radius: 40px;
+                    height: 870px;
+                    border: 9px solid #0b1d33;
+                    box-shadow:
+                        0 0 50px -10px rgba(0, 162, 255, 0.35),
+                        0 25px 60px rgba(0, 0, 0, 0.9);
+                }
+            }
+
+            /* Custom Scrollbar */
+            .screen-scroll::-webkit-scrollbar {
+                display: none;
+            }
+
+            /* Desktop Toolbar Dock */
+            .desktop-bar {
+                width: 100%;
+                max-width: 900px;
+                z-index: 50;
+                margin-top: 12px;
+                display: flex;
+                flex-wrap: wrap;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                padding: 8px 16px;
+                background: rgba(6, 17, 34, 0.85);
+                border: 1px solid rgba(0, 229, 255, 0.3);
+                border-radius: 12px;
+                backdrop-filter: blur(12px);
+            }
+
+            .toolbar-btn {
+                background: #081b33;
+                border: 1px solid #14385e;
+                color: #94a3b8;
+                font-size: 11px;
+                padding: 4px 10px;
+                border-radius: 6px;
+                font-family: "JetBrains Mono", monospace;
+                transition: all 0.15s ease;
+            }
+            .toolbar-btn:hover {
+                background: #0066cc;
+                color: #ffffff;
+                border-color: #00e5ff;
+            }
+            .toolbar-btn.active {
+                background: #0052a3;
+                color: #00e5ff;
+                border-color: #00e5ff;
+                font-weight: 700;
+            }
+
+            /* Interactive Option Cards (Bento + Glass Style) */
+            .option-card {
+                position: relative;
+                background: rgba(7, 21, 40, 0.7);
+                border: 1px solid rgba(0, 140, 255, 0.3);
+                border-radius: 10px;
+                padding: 12px 14px;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                cursor: pointer;
+                overflow: hidden;
+                transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
+                animation: staggerIn 0.3s cubic-bezier(0.16, 1, 0.3, 1) both;
+            }
+            .option-card:hover:not(.disabled) {
+                background: rgba(12, 35, 68, 0.9);
+                border-color: #00e5ff;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 16px rgba(0, 229, 255, 0.2);
+            }
+            .option-card:active:not(.disabled) {
+                transform: scale(0.985);
+            }
+
+            /* Option States */
+            .option-card.correct {
+                background: rgba(0, 240, 160, 0.16) !important;
+                border-color: #00f0a0 !important;
+                box-shadow: 0 0 24px rgba(0, 240, 160, 0.4) !important;
+                animation: pulseGreen 0.4s ease-out forwards;
+            }
+            .option-card.wrong {
+                background: rgba(255, 51, 102, 0.18) !important;
+                border-color: #ff3366 !important;
+                animation: hudShake 0.38s ease-in-out;
+                opacity: 0.75;
+            }
+            .option-card.disabled {
+                pointer-events: none;
+            }
+
+            /* Animations */
+            @keyframes staggerIn {
+                0% {
+                    opacity: 0;
+                    transform: translateY(12px);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translateY(0);
+                }
+            }
+
+            @keyframes pulseGreen {
+                0% {
+                    transform: scale(1);
+                    box-shadow: 0 0 0 0 rgba(0, 240, 160, 0.8);
+                }
+                40% {
+                    transform: scale(1.02);
+                }
+                100% {
+                    transform: scale(1);
+                    box-shadow: 0 0 20px rgba(0, 240, 160, 0.35);
+                }
+            }
+
+            @keyframes hudShake {
+                0%,
+                100% {
+                    transform: translateX(0);
+                }
+                20%,
+                60% {
+                    transform: translateX(-6px);
+                }
+                40%,
+                80% {
+                    transform: translateX(6px);
+                }
+            }
+
+            @keyframes radarPulse {
+                0% {
+                    box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.6);
+                }
+                70% {
+                    box-shadow: 0 0 0 14px rgba(0, 229, 255, 0);
+                }
+                100% {
+                    box-shadow: 0 0 0 0 rgba(0, 229, 255, 0);
+                }
+            }
+
+            .start-cta-btn {
+                position: relative;
+                background: linear-gradient(135deg, #0055b3 0%, #0099ff 50%, #00e5ff 100%);
+                animation: radarPulse 2.2s infinite;
+            }
+
+            /* Live Market Ticker Marquee */
+            @keyframes tickerScroll {
+                0% {
+                    transform: translateX(0);
+                }
+                100% {
+                    transform: translateX(-50%);
+                }
+            }
+            .ticker-wrap {
+                overflow: hidden;
+                white-space: nowrap;
+                position: relative;
+                mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+                -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent);
+            }
+            .ticker-track {
+                display: inline-flex;
+                align-items: center;
+                gap: 16px;
+                width: max-content;
+                animation: tickerScroll 22s linear infinite;
+            }
+            .ticker-track:hover {
+                animation-play-state: paused;
+            }
+        </style>
+    </head>
+    <body class="mockup-mode">
+        <!-- Ambient Visual FX -->
+        <div class="ambient-mesh"></div>
+        <div class="hud-grid-overlay"></div>
+
+        <!-- Desktop Presentation Bar (For Live Demos & Clean Screenshots) -->
+        <div class="desktop-bar hidden md:flex" id="desktopBar">
+            <span class="text-xs font-mono text-cyan-400 mr-2">[STYLE #51+#55 VER.2]</span>
+            <button class="toolbar-btn active" id="btnToggleFrame" onclick="toggleFrame()">手機外框</button>
+            <button class="toolbar-btn" onclick="showScreen('intro')">首頁</button>
+            <button class="toolbar-btn" onclick="jumpQuestion(0)">Q1 晶片股</button>
+            <button class="toolbar-btn" onclick="jumpQuestion(1)">Q2 銅期貨</button>
+            <button class="toolbar-btn" onclick="jumpQuestion(2)">Q3 微軟期權</button>
+            <button class="toolbar-btn" onclick="jumpQuestion(3)">Q4 美國債</button>
+            <button class="toolbar-btn" onclick="jumpQuestion(4)">Q5 VIX</button>
+            <button class="toolbar-btn" onclick="jumpQuestion(5)">Q6 iTRADER 交易達人</button>
+            <button class="toolbar-btn text-amber-400 border-amber-500/40" onclick="showScreen('result')">結算頁</button>
+        </div>
+
+        <!-- Phone Screen Device Container -->
+        <div class="device-container" id="deviceContainer">
+            <!-- Pure Safe Area Top Space (No dummy clocks or fake batteries) -->
+            <div class="w-full h-9 flex-shrink-0 bg-[#040f1d] border-b border-cyan-950/60"></div>
+
+            <!-- HUD Header Bar -->
+            <header class="h-12 px-4 bg-[#061427]/90 border-b border-cyan-500/30 flex items-center justify-between flex-shrink-0 backdrop-blur-md relative z-20">
+                <div class="flex items-center gap-2.5">
+                    <div class="w-6 h-6 rounded bg-white p-0.5 flex items-center justify-center border border-cyan-400/40 shadow-sm shadow-cyan-500/30">
+                        <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" onerror="this.src = 'https://via.placeholder.com/24?text=iT'" />
+                    </div>
+                    <div>
+                        <div class="text-[13px] font-bold tracking-tight text-white flex items-center gap-1.5 leading-none">
+                            <span>元大期貨</span>
+                            <span class="text-cyan-400 font-hud text-[11px] font-black tracking-wider">iTRADER</span>
+                        </div>
+                        <div class="text-[9px] font-mono text-cyan-400/70 tracking-widest leading-none mt-1">AI 全球市場連線</div>
+                    </div>
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <span class="px-2 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-[10px] font-bold text-orange-400">2026 金融科技展</span>
+                </div>
+            </header>
+
+            <!-- App Screen Scrollable Body -->
+            <main class="flex-1 overflow-y-auto screen-scroll relative z-10 flex flex-col justify-between">
+                <!-- ================= SCREEN 1: INTRO (HUD Bento Style) ================= -->
+                <section id="view-intro" class="p-4 flex flex-col justify-between h-full min-h-[750px]">
+                    <!-- Top Hero Card -->
+                    <div class="space-y-4">
+                        <div class="glass-surface rounded-2xl p-5 hud-bracket-box relative overflow-hidden">
+                            <!-- Ambient Corner Beam -->
+                            <div class="absolute -right-8 -top-8 w-28 h-28 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
+
+                            <div class="flex items-center gap-3 mb-3">
+                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 p-0.5 shadow-lg shadow-cyan-500/30">
+                                    <div class="w-full h-full bg-[#051429] rounded-[10px] flex items-center justify-center p-2">
+                                        <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" onerror="this.src = 'https://via.placeholder.com/48?text=iT'" />
+                                    </div>
+                                </div>
+                                <div>
+                                    <span class="text-[10px] font-mono text-cyan-400 tracking-wider">// EXPO CHALLENGE 2026</span>
+                                    <h1 class="text-xl font-bold text-white tracking-tight leading-tight">AI 全球市場連線</h1>
+                                </div>
+                            </div>
+
+                            <p class="text-[13px] text-slate-300 font-medium leading-relaxed bg-[#030d1c]/60 p-3 rounded-lg border border-cyan-900/50">看見趨勢，更要掌握機會。透過 6 道國際市場情境考驗，發掘如何運用期權工具靈活布局全球原物料、科技龍頭與利率脈動。</p>
+                        </div>
+
+                        <!-- Feature Bento Grid (Style #53) -->
+                        <div class="grid grid-cols-3 gap-2.5">
+                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
+                                <div class="w-7 h-7 mx-auto rounded-lg bg-cyan-500/15 text-cyan-300 flex items-center justify-center font-hud text-xs font-bold mb-1.5 border border-cyan-500/30">01</div>
+                                <div class="text-[11px] font-bold text-white leading-tight">掌握 AI 浪潮</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">AI帶動新市場趨勢</div>
+                            </div>
+
+                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
+                                <div class="w-7 h-7 mx-auto rounded-lg bg-orange-500/15 text-orange-400 flex items-center justify-center font-hud text-xs font-bold mb-1.5 border border-orange-500/30">02</div>
+                                <div class="text-[11px] font-bold text-white leading-tight">探索全球市場</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">找到參與市場機會</div>
+                            </div>
+
+                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
+                                <div class="w-7 h-7 mx-auto rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center font-hud text-xs font-bold mb-1.5 border border-emerald-500/30">03</div>
+                                <div class="text-[11px] font-bold text-white leading-tight">攤位闖關集章</div>
+                                <div class="text-[9px] text-slate-400 mt-0.5">兌換大會限量好禮</div>
+                            </div>
+                        </div>
+
+                        <!-- Live Market Ticker Mini Strip (Trading Platform Style) -->
+                        <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-800/40 flex items-center gap-2 text-[10px] font-mono overflow-hidden">
+                            <div class="flex items-center gap-1 text-cyan-400 font-bold flex-shrink-0">
+                                <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
+                                <span>即時報價</span>
+                            </div>
+                            <div class="ticker-wrap flex-1">
+                                <div class="ticker-track">
+                                    <span class="text-slate-300">
+                                        微台指
+                                        <strong class="text-rose-400 font-mono">22,852 ▲+138</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        銅期貨
+                                        <strong class="text-rose-400 font-mono">4.4820 ▲+0.71%</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        微軟選擇權
+                                        <strong class="text-emerald-400 font-mono">428.50 ▼-0.42%</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        美國十年債
+                                        <strong class="text-rose-400 font-mono">110-18 ▲+0-04</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        VIX 指數選擇權
+                                        <strong class="text-emerald-400 font-mono">14.85 ▼-4.01%</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        微台指
+                                        <strong class="text-rose-400 font-mono">22,852 ▲+138</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        銅期貨
+                                        <strong class="text-rose-400 font-mono">4.4820 ▲+0.71%</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        微軟選擇權
+                                        <strong class="text-emerald-400 font-mono">428.50 ▼-0.42%</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        美國十年債
+                                        <strong class="text-rose-400 font-mono">110-18 ▲+0-04</strong>
+                                    </span>
+                                    <span class="text-slate-600">·</span>
+                                    <span class="text-slate-300">
+                                        VIX 指數選擇權
+                                        <strong class="text-emerald-400 font-mono">14.85 ▼-4.01%</strong>
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Start CTA Button Section -->
+                    <div class="mt-6 mb-2 space-y-2">
+                        <button onclick="startGame()" class="start-cta-btn w-full h-[52px] rounded-xl text-white font-bold text-base tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 border border-cyan-300 cursor-pointer">
+                            <span>開始挑戰</span>
+                        </button>
+                        <p class="text-[11px] text-center text-slate-400 font-mono">* 完成 6 道挑戰即可獲得攤位闖關集章</p>
+                    </div>
+                </section>
+
+                <!-- ================= SCREEN 2: QUIZ (Spatial HUD Interactive) ================= -->
+                <section id="view-quiz" class="p-4 flex flex-col justify-between h-full min-h-[750px] hidden">
+                    <div class="space-y-3">
+                        <!-- Telemetry Progress Strip -->
+                        <div class="glass-card-subtle rounded-xl p-2.5 border border-cyan-500/20">
+                            <div class="flex items-center justify-between text-[11px] mb-1.5">
+                                <div class="flex items-center gap-2">
+                                    <span class="font-bold text-orange-400 tracking-wider" id="stepText">題目 1 / 6</span>
+                                    <span class="text-slate-500">|</span>
+                                    <span class="font-medium text-cyan-300" id="topicTag">AI 龍頭股與選擇權</span>
+                                </div>
+                                <span class="font-mono text-[10px] text-slate-400" id="percentText">進度 0%</span>
+                            </div>
+                            <!-- Plasma Gradient Progress Bar -->
+                            <div class="w-full h-2 rounded-full bg-[#030a14] overflow-hidden p-0.5 border border-cyan-900/60">
+                                <div id="progressBar" class="h-full rounded-full bg-gradient-to-r from-blue-600 via-cyan-400 to-orange-400 transition-all duration-500 ease-out shadow-sm shadow-cyan-400/50" style="width: 0%"></div>
+                            </div>
+                        </div>
+
+                        <!-- Question Bento Card (Fixed Height, Zero Jitter) -->
+                        <div class="glass-surface rounded-2xl p-3.5 hud-bracket-box flex flex-col gap-3 h-[372px] flex-shrink-0">
+                            <!-- 240px Portrait Image Frame -->
+                            <div class="w-full h-[240px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0">
+                                <img id="qImg" src="" alt="情境圖" class="w-full h-full object-cover object-center hidden" onload="onImgLoaded()" onerror="onImgError()" />
+
+                                <!-- Q6 Icon Layout Mode -->
+                                <div id="qIconContainer" class="flex flex-col items-center justify-center gap-2.5 p-4 text-center hidden">
+                                    <div class="w-20 h-20 rounded-2xl bg-white p-2.5 shadow-xl shadow-cyan-500/20 border border-cyan-400/40">
+                                        <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" />
+                                    </div>
+                                    <div class="px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[11px] font-bold text-cyan-300 font-mono tracking-wide">iTRADER 交易達人</div>
+                                    <div class="text-[10px] text-slate-400 max-w-[240px]">多元海內外期權商品 · 自訂智慧策略監控</div>
+                                </div>
+
+                                <!-- Fallback State -->
+                                <div id="qFallback" class="flex flex-col items-center justify-center p-4 text-center">
+                                    <div class="w-8 h-8 rounded-full bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-mono mb-1 animate-pulse">AI</div>
+                                    <span class="text-xs text-slate-300 font-medium" id="fallbackTitle">市場情境載入中</span>
+                                    <span class="text-[10px] font-mono text-cyan-400/70 mt-0.5" id="fallbackName">q1_ai_chip.jpg</span>
+                                </div>
+                            </div>
+
+                            <!-- Fixed Height Vertically Centered Question Title -->
+                            <div class="h-[90px] min-h-[90px] flex items-center justify-start w-full overflow-hidden px-1">
+                                <h2 id="qTitle" class="text-[16px] font-medium text-white leading-snug tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em;">載入中...</h2>
+                            </div>
+                        </div>
+
+                        <!-- Options Group -->
+                        <div id="optionsWrap" class="space-y-2">
+                            <!-- Dynamically injected via JS -->
+                        </div>
+
+                        <!-- Feedback & Explanation Panels (Spatial Slide-Up) -->
+                        <div id="hintBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-amber-400 text-left hidden">
+                            <div class="text-[11px] font-bold text-amber-400 flex items-center gap-1 mb-1">
+                                <span>請重新選擇（參考提示）</span>
+                            </div>
+                            <p id="hintMsg" class="text-xs text-slate-200 leading-relaxed"></p>
+                        </div>
+
+                        <div id="correctBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-emerald-400 text-left hidden space-y-2">
+                            <div class="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                                <span>✓ 答題正確</span>
+                            </div>
+                            <p id="expMsg" class="text-xs text-slate-200 leading-relaxed"></p>
+                            <button onclick="nextQ()" id="btnNext" class="w-full h-10 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-xs tracking-wider uppercase hover:opacity-95 cursor-pointer shadow-md shadow-cyan-500/20">下一題 ➔</button>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- ================= SCREEN 3: RESULT (Holographic Mission Accomplished) ================= -->
+                <section id="view-result" class="p-4 flex flex-col justify-between h-full min-h-[750px] hidden">
+                    <div class="space-y-4">
+                        <!-- Mission Stamp Banner -->
+                        <div class="glass-card-subtle rounded-xl p-3.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
+                            <div class="flex items-center gap-2">
+                                <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+                                <span class="text-xs font-bold">攤位闖關集章認證完畢</span>
+                            </div>
+                            <span class="text-xs tracking-widest text-emerald-300 font-bold">[已認證]</span>
+                        </div>
+
+                        <!-- Stats Bento (Scaled Down Font Size) -->
+                        <div class="grid grid-cols-3 gap-2 text-center">
+                            <div class="glass-surface rounded-xl p-3 border border-cyan-900/60">
+                                <div class="font-hud text-lg font-bold text-cyan-300" id="statAccuracy">100%</div>
+                                <div class="text-[10px] text-slate-400 font-mono mt-1">闖關完成度</div>
+                            </div>
+                            <div class="glass-surface rounded-xl p-3 border border-cyan-900/60">
+                                <div class="font-hud text-lg font-bold text-orange-400" id="statNodes">6 / 6</div>
+                                <div class="text-[10px] text-slate-400 font-mono mt-1">探索商品數</div>
+                            </div>
+                            <div class="glass-surface rounded-xl p-3 border border-cyan-900/60">
+                                <div class="text-base font-bold text-emerald-400">闖關完成</div>
+                                <div class="text-[10px] text-slate-400 font-mono mt-1">闖關狀態</div>
+                            </div>
+                        </div>
+
+                        <!-- Unlocked Commodities Bento (Style #53) -->
+                        <div class="glass-surface rounded-2xl p-4 hud-bracket-box">
+                            <div class="flex items-center justify-between mb-2.5">
+                                <h3 class="text-xs font-mono text-cyan-400 tracking-wider">// 全球市場商品探索清單</h3>
+                                <span class="text-[10px] font-mono text-slate-400">6 項目錄</span>
+                            </div>
+                            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
+                                    <span>AI 股選擇權</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
+                                    <span>銅期貨 (電纜原料)</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
+                                    <span>微軟期權 (部位保護)</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
+                                    <span>美國十年債期貨</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+                                    <span>VIX 波動率指數</span>
+                                </div>
+                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-cyan-300 flex items-center gap-2 font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+                                    <span>iTRADER 交易達人</span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Booth Engagement Actions -->
+                        <div class="grid grid-cols-2 gap-2.5">
+                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
+                                <div class="w-16 h-16 mx-auto bg-white rounded-lg p-1 mb-2 flex items-center justify-center font-mono text-[9px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
+                                <div class="text-[11px] font-bold text-white">下載 iTRADER 交易達人</div>
+                                <div class="text-[9px] text-cyan-400/80 mt-0.5">現場開戶享專屬好禮</div>
+                            </div>
+
+                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
+                                <div class="w-16 h-16 mx-auto bg-white rounded-lg p-1 mb-2 flex items-center justify-center font-mono text-[9px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
+                                <div class="text-[11px] font-bold text-white">填寫展場問卷</div>
+                                <div class="text-[9px] text-orange-400/80 mt-0.5">兌換限量品牌周邊</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Restart Button -->
+                    <div class="mt-4 mb-2">
+                        <button onclick="showScreen('intro')" class="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
+                            <span>&#x21bb;</span>
+                            <span>重新開始挑戰</span>
+                        </button>
+                    </div>
+                </section>
+            </main>
+        </div>
+
+        <!-- Interactive JavaScript Engine -->
+        <script>
+            // Quiz Database
+            const quizData = [
+                {
+                    id: 1,
+                    topic: "AI 龍頭股與選擇權",
+                    imageFile: "q1_ai_chip.jpg",
+                    title: "主流 AI 龍頭股的股價動輒數百甚至上千元，身為散戶的你想參與行情，卻不想投入巨大資本，也不希望承擔難以預期的風險，你可以透過哪個商品類型參與？",
+                    hint: "想找一個能放大財務槓桿，同時把最大損失鎖定在已支付權利金內的商品類型。",
+                    explanation: "買進選擇權買權只需要支付少許的權利金，就能參與高價 AI 股的漲跌幅；同時，買方的最大可能損失預先鎖定在已支付的權利金內，下檔風險可控。",
+                    options: [
+                        { letter: "A", text: "選擇權", correct: true },
+                        { letter: "B", text: "基金", correct: false },
+                        { letter: "C", text: "保險", correct: false },
+                    ],
+                },
+                {
+                    id: 2,
+                    topic: "AI 資料中心與原物料",
+                    imageFile: "q2_copper.jpg",
+                    title: "AI 資料中心之間，以及資料中心到各地用戶的數據傳輸，需要大量佈建電纜線路。這股基礎建設需求最直接反映在哪個商品？",
+                    hint: "想想電纜與高負載電力傳輸線路最常用哪一種金屬原料？",
+                    explanation: "銅是電纜與電力線路佈建的核心原料，銅期貨能高度反映 AI 資料中心擴建連結網路時所帶動的原物料需求。",
+                    options: [
+                        { letter: "A", text: "銅期貨", correct: true },
+                        { letter: "B", text: "NVIDIA 選擇權", correct: false },
+                        { letter: "C", text: "微型 S&P 指數期貨", correct: false },
+                    ],
+                },
+                {
+                    id: 3,
+                    topic: "美股部位保護",
+                    imageFile: "q3_microsoft.jpg",
+                    title: "假設你已經透過複委託持有微軟美股，財報公布前你想替這筆投資加一層價格保護，可以透過哪個商品做到？",
+                    hint: "想想有什麼衍生性金融商品可以替現貨股票「買保險」防範重挫？",
+                    explanation: "選擇權可用來為手中的美股部位建立避險價格保護，這是現貨股票本身無法直接做到的風險管理方式。",
+                    options: [
+                        { letter: "A", text: "微軟選擇權", correct: true },
+                        { letter: "B", text: "小那斯達克期貨", correct: false },
+                        { letter: "C", text: "天然氣期貨", correct: false },
+                    ],
+                },
+                {
+                    id: 4,
+                    topic: "公債殖利率與籌資成本",
+                    imageFile: "q4_bond.jpg",
+                    title: "科技巨頭近年大舉發債為 AI 資料中心籌措資金，美國公債殖利率走向牽動整體投資成本。如果想直接參與市場對「利率」本身的看法，可以透過哪個商品？",
+                    hint: "想想「利率」本身不是一家公司，無法買股票，但能透過哪種國家公債合約參與？",
+                    explanation: "利率本身沒有股票可以直接買賣；美國十年公債期貨讓交易人直接參與市場對長期利率走勢的預期。",
+                    options: [
+                        { letter: "A", text: "美國十年公債期貨", correct: true },
+                        { letter: "B", text: "微軟股票", correct: false },
+                        { letter: "C", text: "黃金現貨", correct: false },
+                    ],
+                },
+                {
+                    id: 5,
+                    topic: "恐慌指數與市場情緒",
+                    imageFile: "q5_vix.jpg",
+                    title: "當市場對 AI 相關消息反應劇烈、行情大幅震盪時，哪個商品專門用來反映這種波動程度？",
+                    hint: "全名為芝加哥選擇權交易所波動率指數，常被市場通稱為恐慌指標。",
+                    explanation: "VIX 為芝加哥選擇權交易所波動率指數，反映市場對未來 30 天波動的預期，是觀察市場情緒極具指標性的商品。",
+                    options: [
+                        { letter: "A", text: "VIX 波動率指數期貨", correct: true },
+                        { letter: "B", text: "微型 S&P 指數期貨", correct: false },
+                        { letter: "C", text: "原油期貨", correct: false },
+                    ],
+                },
+                {
+                    id: 6,
+                    topic: "iTRADER 交易達人",
+                    imageFile: "iTRADER_logo.svg",
+                    isIcon: true,
+                    title: "想要隨時掌握全球市場脈動、掌握 AI 浪潮下的多元投資機會，哪一個行動軟體能為你提供完整的期貨與選擇權交易服務？",
+                    hint: "元大期貨專為海內外期貨與選擇權策略交易量身打造的旗艦交易平台。",
+                    explanation: "元大期貨 iTRADER 串聯國內外多元期權商品，提供直覺高效的下單體驗，是把握 AI 全球行情的最佳武器。",
+                    options: [
+                        { letter: "A", text: "元大期貨 iTRADER", correct: true },
+                        { letter: "B", text: "一般社群通訊軟體", correct: false },
+                        { letter: "C", text: "網路購物商城", correct: false },
+                    ],
+                },
+            ];
+
+            let currentQ = 0;
+
+            function showScreen(name) {
+                document.getElementById("view-intro").classList.add("hidden");
+                document.getElementById("view-quiz").classList.add("hidden");
+                document.getElementById("view-result").classList.add("hidden");
+
+                if (name === "intro") {
+                    document.getElementById("view-intro").classList.remove("hidden");
+                } else if (name === "quiz") {
+                    document.getElementById("view-quiz").classList.remove("hidden");
+                } else if (name === "result") {
+                    document.getElementById("view-result").classList.remove("hidden");
+                    animateCounters();
+                }
+            }
+
+            function startGame() {
+                showScreen("quiz");
+                loadQuestion(0);
+            }
+
+            function loadQuestion(idx) {
+                currentQ = idx;
+                const q = quizData[idx];
+
+                // Telemetry updates
+                document.getElementById("stepText").textContent = `題目 ${idx + 1} / ${quizData.length}`;
+                document.getElementById("topicTag").textContent = q.topic;
+                const currentPct = Math.round((idx / quizData.length) * 100);
+                document.getElementById("percentText").textContent = `進度 ${currentPct}%`;
+                document.getElementById("progressBar").style.width = `${currentPct}%`;
+
+                // Title
+                document.getElementById("qTitle").textContent = q.title;
+
+                // Image / Icon toggle
+                const imgElem = document.getElementById("qImg");
+                const iconBox = document.getElementById("qIconContainer");
+                const fallbackBox = document.getElementById("qFallback");
+
+                if (q.isIcon) {
+                    imgElem.classList.add("hidden");
+                    fallbackBox.classList.add("hidden");
+                    iconBox.classList.remove("hidden");
+                } else {
+                    iconBox.classList.add("hidden");
+                    imgElem.classList.add("hidden");
+                    fallbackBox.classList.remove("hidden");
+                    document.getElementById("fallbackTitle").textContent = `${q.topic} 情境圖載入中`;
+                    document.getElementById("fallbackName").textContent = q.imageFile;
+                    imgElem.src = q.imageFile;
+                }
+
+                // Reset panels
+                document.getElementById("hintBox").classList.add("hidden");
+                document.getElementById("correctBox").classList.add("hidden");
+
+                // Next button text
+                const btnNext = document.getElementById("btnNext");
+                if (idx === quizData.length - 1) {
+                    btnNext.textContent = "完成挑戰 · 查看成果 ➔";
+                } else {
+                    btnNext.textContent = "下一題 ➔";
+                }
+
+                // Render Options
+                const optionsWrap = document.getElementById("optionsWrap");
+                optionsWrap.innerHTML = "";
+
+                q.options.forEach((opt, oIdx) => {
+                    const card = document.createElement("div");
+                    card.className = "option-card";
+                    card.style.animationDelay = `${oIdx * 70}ms`;
+                    card.innerHTML = `
+          <div class="w-6 h-6 rounded bg-[#0b2447] border border-cyan-500/50 flex items-center justify-center font-hud text-xs font-bold text-cyan-300 flex-shrink-0">
+            ${opt.letter}
+          </div>
+          <div class="flex-1 text-[15px] font-medium text-slate-100 leading-snug">
+            ${opt.text}
+          </div>
+          <div class="check-icon hidden text-emerald-400 font-bold text-sm">✓</div>
+        `;
+                    card.onclick = () => selectOpt(card, opt, q);
+                    optionsWrap.appendChild(card);
+                });
+            }
+
+            function selectOpt(card, opt, q) {
+                const hintBox = document.getElementById("hintBox");
+                const correctBox = document.getElementById("correctBox");
+
+                if (opt.correct) {
+                    card.classList.add("correct");
+                    card.querySelector(".check-icon").classList.remove("hidden");
+                    document.querySelectorAll(".option-card").forEach((c) => c.classList.add("disabled"));
+
+                    // Advance progress on correct answer
+                    const completedPct = Math.round(((currentQ + 1) / quizData.length) * 100);
+                    document.getElementById("percentText").textContent = `進度 ${completedPct}%`;
+                    document.getElementById("progressBar").style.width = `${completedPct}%`;
+
+                    hintBox.classList.add("hidden");
+                    document.getElementById("expMsg").textContent = q.explanation;
+                    correctBox.classList.remove("hidden");
+                } else {
+                    card.classList.add("wrong");
+                    card.classList.add("disabled");
+                    document.getElementById("hintMsg").textContent = q.hint;
+                    hintBox.classList.remove("hidden");
+                }
+            }
+
+            function nextQ() {
+                if (currentQ < quizData.length - 1) {
+                    loadQuestion(currentQ + 1);
+                } else {
+                    showScreen("result");
+                }
+            }
+
+            function onImgLoaded() {
+                document.getElementById("qFallback").classList.add("hidden");
+                document.getElementById("qImg").classList.remove("hidden");
+            }
+
+            function onImgError() {
+                document.getElementById("qImg").classList.add("hidden");
+                document.getElementById("qFallback").classList.remove("hidden");
+            }
+
+            function jumpQuestion(idx) {
+                showScreen("quiz");
+                loadQuestion(idx);
+            }
+
+            function toggleFrame() {
+                document.body.classList.toggle("mockup-mode");
+                const btn = document.getElementById("btnToggleFrame");
+                btn.classList.toggle("active");
+            }
+
+            function animateCounters() {
+                const accElem = document.getElementById("statAccuracy");
+                const nodeElem = document.getElementById("statNodes");
+                if (!accElem || !nodeElem) return;
+
+                const duration = 800;
+                const start = performance.now();
+
+                function update(now) {
+                    const p = Math.min((now - start) / duration, 1);
+                    const ease = 1 - Math.pow(1 - p, 4);
+                    accElem.textContent = `${Math.round(ease * 100)}%`;
+                    nodeElem.textContent = `${Math.round(ease * 6)} / 6`;
+                    if (p < 1) requestAnimationFrame(update);
+                }
+                requestAnimationFrame(update);
+            }
+        </script>
+    </body>
+</html>
