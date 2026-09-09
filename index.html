@@ -46,11 +46,16 @@
                 user-select: none;
             }
 
+            html,
+            body {
+                height: 100%;
+                height: 100dvh;
+            }
+
             body {
                 background: #02060f;
                 color: #e2e8f0;
                 font-family: "Noto Sans TC", "Inter", sans-serif;
-                min-height: 100vh;
                 display: flex;
                 flex-direction: column;
                 align-items: center;
@@ -122,26 +127,27 @@
             /* Phone Device Mockup Container */
             .device-container {
                 width: 100%;
-                max-width: 420px;
-                min-height: 850px;
-                height: 100vh;
-                max-height: 900px;
+                max-width: 430px;
+                height: 100%;
+                height: 100dvh;
                 position: relative;
                 z-index: 10;
                 display: flex;
                 flex-direction: column;
                 background: #040d1a;
                 overflow: hidden;
-                border: 1px solid rgba(0, 229, 255, 0.28);
                 transition: all 0.3s ease;
             }
 
             @media (min-width: 520px) {
+                body.mockup-mode {
+                    padding: 12px 0 20px;
+                }
                 body.mockup-mode .device-container {
-                    margin-top: 16px;
-                    margin-bottom: 30px;
-                    border-radius: 40px;
-                    height: 870px;
+                    border-radius: 36px;
+                    height: min(840px, calc(100dvh - 54px));
+                    min-height: 600px;
+                    max-height: 860px;
                     border: 9px solid #0b1d33;
                     box-shadow:
                         0 0 50px -10px rgba(0, 162, 255, 0.35),
@@ -200,10 +206,11 @@
                 background: rgba(7, 21, 40, 0.7);
                 border: 1px solid rgba(0, 140, 255, 0.3);
                 border-radius: 10px;
-                padding: 12px 14px;
+                padding: 9px 12px;
+                min-height: 44px;
                 display: flex;
                 align-items: center;
-                gap: 12px;
+                gap: 10px;
                 cursor: pointer;
                 overflow: hidden;
                 transition: all 0.18s cubic-bezier(0.16, 1, 0.3, 1);
@@ -344,83 +351,83 @@
 
         <!-- Phone Screen Device Container -->
         <div class="device-container" id="deviceContainer">
-            <!-- Pure Safe Area Top Space (No dummy clocks or fake batteries) -->
-            <div class="w-full h-9 flex-shrink-0 bg-[#040f1d] border-b border-cyan-950/60"></div>
+            <!-- Pure Safe Area Top Space (Visible only in desktop mockup frame) -->
+            <div class="w-full h-0 sm:h-6 flex-shrink-0 bg-[#040f1d] border-b border-cyan-950/60 hidden sm:block"></div>
 
             <!-- HUD Header Bar -->
-            <header class="h-12 px-4 bg-[#061427]/90 border-b border-cyan-500/30 flex items-center justify-between flex-shrink-0 backdrop-blur-md relative z-20">
+            <header class="h-12 px-3.5 sm:px-4 bg-[#061427]/90 border-b border-cyan-500/30 flex items-center justify-between flex-shrink-0 backdrop-blur-md relative z-20">
                 <div class="flex items-center gap-2.5">
                     <div class="w-6 h-6 rounded bg-white p-0.5 flex items-center justify-center border border-cyan-400/40 shadow-sm shadow-cyan-500/30">
                         <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" onerror="this.src = 'https://via.placeholder.com/24?text=iT'" />
                     </div>
                     <div>
-                        <div class="text-[13px] font-bold tracking-tight text-white flex items-center gap-1.5 leading-none">
+                        <div class="text-[14px] font-bold tracking-tight text-white flex items-center gap-1.5 leading-none">
                             <span>元大期貨</span>
-                            <span class="text-cyan-400 font-hud text-[11px] font-black tracking-wider">iTRADER</span>
+                            <span class="text-cyan-400 font-hud text-[12px] font-black tracking-wider">iTRADER</span>
                         </div>
-                        <div class="text-[9px] font-mono text-cyan-400/70 tracking-widest leading-none mt-1">AI 全球市場連線</div>
+                        <div class="text-[11px] font-mono text-cyan-400/80 tracking-widest leading-none mt-1">AI 全球市場連線</div>
                     </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <span class="px-2 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-[10px] font-bold text-orange-400">2026 金融科技展</span>
+                    <span class="px-2 py-0.5 rounded bg-orange-500/20 border border-orange-500/40 text-[11.5px] font-bold text-orange-400">2026 金融科技展</span>
                 </div>
             </header>
 
             <!-- App Screen Scrollable Body -->
-            <main class="flex-1 overflow-y-auto screen-scroll relative z-10 flex flex-col justify-between">
+            <main class="flex-1 overflow-hidden relative z-10 flex flex-col">
                 <!-- ================= SCREEN 1: INTRO (HUD Bento Style) ================= -->
-                <section id="view-intro" class="p-4 flex flex-col justify-between h-full min-h-[750px]">
+                <section id="view-intro" class="p-3.5 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll">
                     <!-- Top Hero Card -->
-                    <div class="space-y-4">
-                        <div class="glass-surface rounded-2xl p-5 hud-bracket-box relative overflow-hidden">
+                    <div class="space-y-3">
+                        <div class="glass-surface rounded-2xl p-3.5 sm:p-4 hud-bracket-box relative overflow-hidden">
                             <!-- Ambient Corner Beam -->
                             <div class="absolute -right-8 -top-8 w-28 h-28 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
 
-                            <div class="flex items-center gap-3 mb-3">
-                                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 p-0.5 shadow-lg shadow-cyan-500/30">
-                                    <div class="w-full h-full bg-[#051429] rounded-[10px] flex items-center justify-center p-2">
+                            <div class="flex items-center gap-3 mb-2.5">
+                                <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-blue-600 to-cyan-500 p-0.5 shadow-lg shadow-cyan-500/30 flex-shrink-0">
+                                    <div class="w-full h-full bg-[#051429] rounded-[10px] flex items-center justify-center p-1.5">
                                         <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" onerror="this.src = 'https://via.placeholder.com/48?text=iT'" />
                                     </div>
                                 </div>
                                 <div>
-                                    <span class="text-[10px] font-mono text-cyan-400 tracking-wider">// EXPO CHALLENGE 2026</span>
-                                    <h1 class="text-xl font-bold text-white tracking-tight leading-tight">AI 全球市場連線</h1>
+                                    <span class="text-[11px] font-mono text-cyan-400 tracking-wider">// EXPO CHALLENGE 2026</span>
+                                    <h1 class="text-[20px] font-bold text-white tracking-tight leading-tight">AI 全球市場連線</h1>
                                 </div>
                             </div>
 
-                            <p class="text-[13px] text-slate-300 font-medium leading-relaxed bg-[#030d1c]/60 p-3 rounded-lg border border-cyan-900/50">看見趨勢，更要掌握機會。透過 6 道國際市場情境考驗，發掘如何運用期權工具靈活布局全球原物料、科技龍頭與利率脈動。</p>
+                            <p class="text-[13.5px] sm:text-[14px] text-slate-200 font-medium leading-relaxed bg-[#030d1c]/60 p-2.5 rounded-lg border border-cyan-900/50">看見趨勢，更要掌握機會。透過 6 道國際市場情境考驗，發掘如何運用期權工具靈活布局全球原物料、科技龍頭與利率脈動。</p>
                         </div>
 
                         <!-- Feature Bento Grid (Style #53) -->
-                        <div class="grid grid-cols-3 gap-2.5">
-                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
-                                <div class="w-7 h-7 mx-auto rounded-lg bg-cyan-500/15 text-cyan-300 flex items-center justify-center font-hud text-xs font-bold mb-1.5 border border-cyan-500/30">01</div>
-                                <div class="text-[11px] font-bold text-white leading-tight">掌握 AI 浪潮</div>
-                                <div class="text-[9px] text-slate-400 mt-0.5">AI帶動新市場趨勢</div>
+                        <div class="grid grid-cols-3 gap-2">
+                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
+                                <div class="w-6 h-6 mx-auto rounded-lg bg-cyan-500/15 text-cyan-300 flex items-center justify-center font-hud text-xs font-bold mb-1 border border-cyan-500/30">01</div>
+                                <div class="text-[12.5px] font-bold text-white leading-tight">掌握 AI 浪潮</div>
+                                <div class="text-[11px] text-slate-300 mt-0.5">AI帶動新市場趨勢</div>
                             </div>
 
-                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
-                                <div class="w-7 h-7 mx-auto rounded-lg bg-orange-500/15 text-orange-400 flex items-center justify-center font-hud text-xs font-bold mb-1.5 border border-orange-500/30">02</div>
-                                <div class="text-[11px] font-bold text-white leading-tight">探索全球市場</div>
-                                <div class="text-[9px] text-slate-400 mt-0.5">找到參與市場機會</div>
+                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
+                                <div class="w-6 h-6 mx-auto rounded-lg bg-orange-500/15 text-orange-400 flex items-center justify-center font-hud text-xs font-bold mb-1 border border-orange-500/30">02</div>
+                                <div class="text-[12.5px] font-bold text-white leading-tight">探索全球市場</div>
+                                <div class="text-[11px] text-slate-300 mt-0.5">找到參與市場機會</div>
                             </div>
 
-                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
-                                <div class="w-7 h-7 mx-auto rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center font-hud text-xs font-bold mb-1.5 border border-emerald-500/30">03</div>
-                                <div class="text-[11px] font-bold text-white leading-tight">攤位闖關集章</div>
-                                <div class="text-[9px] text-slate-400 mt-0.5">兌換大會限量好禮</div>
+                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
+                                <div class="w-6 h-6 mx-auto rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center font-hud text-xs font-bold mb-1 border border-emerald-500/30">03</div>
+                                <div class="text-[12.5px] font-bold text-white leading-tight">攤位闖關集章</div>
+                                <div class="text-[11px] text-slate-300 mt-0.5">兌換大會限量好禮</div>
                             </div>
                         </div>
 
                         <!-- Live Market Ticker Mini Strip (Trading Platform Style) -->
-                        <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-800/40 flex items-center gap-2 text-[10px] font-mono overflow-hidden">
-                            <div class="flex items-center gap-1 text-cyan-400 font-bold flex-shrink-0">
+                        <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-800/40 flex items-center gap-2 text-[12px] font-mono overflow-hidden">
+                            <div class="flex items-center gap-1.5 text-cyan-400 font-bold flex-shrink-0">
                                 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
                                 <span>即時報價</span>
                             </div>
                             <div class="ticker-wrap flex-1">
-                                <div class="ticker-track">
+                                <div class="ticker-track text-[12.5px]">
                                     <span class="text-slate-300">
                                         微台指
                                         <strong class="text-rose-400 font-mono">22,852 ▲+138</strong>
@@ -476,26 +483,26 @@
                     </div>
 
                     <!-- Start CTA Button Section -->
-                    <div class="mt-6 mb-2 space-y-2">
-                        <button onclick="startGame()" class="start-cta-btn w-full h-[52px] rounded-xl text-white font-bold text-base tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 border border-cyan-300 cursor-pointer">
+                    <div class="mt-4 mb-1 space-y-2">
+                        <button onclick="startGame()" class="start-cta-btn w-full h-[50px] rounded-xl text-white font-bold text-[16.5px] tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 border border-cyan-300 cursor-pointer">
                             <span>開始挑戰</span>
                         </button>
-                        <p class="text-[11px] text-center text-slate-400 font-mono">* 完成 6 道挑戰即可獲得攤位闖關集章</p>
+                        <p class="text-[12px] text-center text-slate-400 font-mono">* 完成 6 道挑戰即可獲得攤位闖關集章</p>
                     </div>
                 </section>
 
                 <!-- ================= SCREEN 2: QUIZ (Spatial HUD Interactive) ================= -->
-                <section id="view-quiz" class="p-4 flex flex-col justify-between h-full min-h-[750px] hidden">
-                    <div class="space-y-3">
+                <section id="view-quiz" class="p-3 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll hidden">
+                    <div class="space-y-2 flex-1 flex flex-col justify-between">
                         <!-- Telemetry Progress Strip -->
-                        <div class="glass-card-subtle rounded-xl p-2.5 border border-cyan-500/20">
-                            <div class="flex items-center justify-between text-[11px] mb-1.5">
+                        <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-500/20 flex-shrink-0">
+                            <div class="flex items-center justify-between text-[12.5px] mb-1.5">
                                 <div class="flex items-center gap-2">
                                     <span class="font-bold text-orange-400 tracking-wider" id="stepText">題目 1 / 6</span>
                                     <span class="text-slate-500">|</span>
                                     <span class="font-medium text-cyan-300" id="topicTag">AI 龍頭股與選擇權</span>
                                 </div>
-                                <span class="font-mono text-[10px] text-slate-400" id="percentText">進度 0%</span>
+                                <span class="font-mono text-[12px] text-slate-400" id="percentText">進度 0%</span>
                             </div>
                             <!-- Plasma Gradient Progress Bar -->
                             <div class="w-full h-2 rounded-full bg-[#030a14] overflow-hidden p-0.5 border border-cyan-900/60">
@@ -503,93 +510,93 @@
                             </div>
                         </div>
 
-                        <!-- Question Bento Card (Fixed Height, Zero Jitter) -->
-                        <div class="glass-surface rounded-2xl p-3.5 hud-bracket-box flex flex-col gap-3 h-[372px] flex-shrink-0">
-                            <!-- 240px Portrait Image Frame -->
-                            <div class="w-full h-[240px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0">
+                        <!-- Question Bento Card (Responsive Height, Zero Jitter) -->
+                        <div class="glass-surface rounded-2xl p-2.5 sm:p-3 hud-bracket-box flex flex-col gap-2 flex-shrink-0">
+                            <!-- Responsive Image Frame -->
+                            <div class="w-full h-[120px] xs:h-[135px] sm:h-[155px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0">
                                 <img id="qImg" src="" alt="情境圖" class="w-full h-full object-cover object-center hidden" onload="onImgLoaded()" onerror="onImgError()" />
 
                                 <!-- Q6 Icon Layout Mode -->
-                                <div id="qIconContainer" class="flex flex-col items-center justify-center gap-2.5 p-4 text-center hidden">
-                                    <div class="w-20 h-20 rounded-2xl bg-white p-2.5 shadow-xl shadow-cyan-500/20 border border-cyan-400/40">
+                                <div id="qIconContainer" class="flex flex-col items-center justify-center gap-1.5 p-2 text-center hidden">
+                                    <div class="w-14 h-14 rounded-xl bg-white p-2 shadow-lg shadow-cyan-500/20 border border-cyan-400/40">
                                         <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" />
                                     </div>
-                                    <div class="px-3 py-1 rounded-full bg-cyan-950 border border-cyan-500/40 text-[11px] font-bold text-cyan-300 font-mono tracking-wide">iTRADER 交易達人</div>
-                                    <div class="text-[10px] text-slate-400 max-w-[240px]">多元海內外期權商品 · 自訂智慧策略監控</div>
+                                    <div class="px-2.5 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-[12px] font-bold text-cyan-300 font-mono tracking-wide">iTRADER 交易達人</div>
+                                    <div class="text-[11.5px] text-slate-400 max-w-[260px]">多元海內外期權商品 · 自訂智慧策略監控</div>
                                 </div>
 
                                 <!-- Fallback State -->
-                                <div id="qFallback" class="flex flex-col items-center justify-center p-4 text-center">
-                                    <div class="w-8 h-8 rounded-full bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-mono mb-1 animate-pulse">AI</div>
-                                    <span class="text-xs text-slate-300 font-medium" id="fallbackTitle">市場情境載入中</span>
-                                    <span class="text-[10px] font-mono text-cyan-400/70 mt-0.5" id="fallbackName">q1_ai_chip.jpg</span>
+                                <div id="qFallback" class="flex flex-col items-center justify-center p-3 text-center">
+                                    <div class="w-7 h-7 rounded-full bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-mono mb-1 animate-pulse">AI</div>
+                                    <span class="text-[13px] text-slate-300 font-medium" id="fallbackTitle">市場情境載入中</span>
+                                    <span class="text-[11.5px] font-mono text-cyan-400/70 mt-0.5" id="fallbackName">q1_ai_chip.jpg</span>
                                 </div>
                             </div>
 
-                            <!-- Fixed Height Vertically Centered Question Title -->
-                            <div class="h-[90px] min-h-[90px] flex items-center justify-start w-full overflow-hidden px-1">
-                                <h2 id="qTitle" class="text-[16px] font-medium text-white leading-snug tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em;">載入中...</h2>
+                            <!-- Question Title Area -->
+                            <div class="min-h-[50px] max-h-[70px] flex items-center justify-start w-full overflow-hidden px-1">
+                                <h2 id="qTitle" class="text-[15.5px] xs:text-[16.5px] font-medium text-white leading-snug tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em;">載入中...</h2>
                             </div>
                         </div>
 
                         <!-- Options Group -->
-                        <div id="optionsWrap" class="space-y-2">
+                        <div id="optionsWrap" class="space-y-1.5 flex-shrink-0">
                             <!-- Dynamically injected via JS -->
                         </div>
 
-                        <!-- Feedback & Explanation Panels (Spatial Slide-Up) -->
-                        <div id="hintBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-amber-400 text-left hidden">
-                            <div class="text-[11px] font-bold text-amber-400 flex items-center gap-1 mb-1">
+                        <!-- Feedback & Explanation Panels -->
+                        <div id="hintBox" class="glass-card-subtle rounded-xl p-2.5 border-l-4 border-amber-400 text-left hidden flex-shrink-0">
+                            <div class="text-[13px] font-bold text-amber-400 flex items-center gap-1 mb-1">
                                 <span>請重新選擇（參考提示）</span>
                             </div>
-                            <p id="hintMsg" class="text-xs text-slate-200 leading-relaxed"></p>
+                            <p id="hintMsg" class="text-[13.5px] text-slate-200 leading-snug"></p>
                         </div>
 
-                        <div id="correctBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-emerald-400 text-left hidden space-y-2">
-                            <div class="text-[11px] font-bold text-emerald-400 flex items-center gap-1">
+                        <div id="correctBox" class="glass-card-subtle rounded-xl p-2.5 border-l-4 border-emerald-400 text-left hidden space-y-2 flex-shrink-0">
+                            <div class="text-[13px] font-bold text-emerald-400 flex items-center gap-1">
                                 <span>✓ 答題正確</span>
                             </div>
-                            <p id="expMsg" class="text-xs text-slate-200 leading-relaxed"></p>
-                            <button onclick="nextQ()" id="btnNext" class="w-full h-10 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-xs tracking-wider uppercase hover:opacity-95 cursor-pointer shadow-md shadow-cyan-500/20">下一題 ➔</button>
+                            <p id="expMsg" class="text-[13.5px] text-slate-200 leading-snug"></p>
+                            <button onclick="nextQ()" id="btnNext" class="w-full h-10 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-[14.5px] tracking-wider uppercase hover:opacity-95 cursor-pointer shadow-md shadow-cyan-500/20">下一題 ➔</button>
                         </div>
                     </div>
                 </section>
 
                 <!-- ================= SCREEN 3: RESULT (Holographic Mission Accomplished) ================= -->
-                <section id="view-result" class="p-4 flex flex-col justify-between h-full min-h-[750px] hidden">
-                    <div class="space-y-4">
+                <section id="view-result" class="p-3.5 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll hidden">
+                    <div class="space-y-2.5">
                         <!-- Mission Stamp Banner -->
-                        <div class="glass-card-subtle rounded-xl p-3.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
+                        <div class="glass-card-subtle rounded-xl px-3 py-2.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                <span class="text-xs font-bold">攤位闖關集章認證完畢</span>
+                                <span class="text-[13.5px] font-bold">攤位闖關集章認證完畢</span>
                             </div>
-                            <span class="text-xs tracking-widest text-emerald-300 font-bold">[已認證]</span>
+                            <span class="text-[12px] tracking-widest text-emerald-300 font-bold">[已認證]</span>
                         </div>
 
-                        <!-- Stats Bento (Scaled Down Font Size) -->
+                        <!-- Stats Bento -->
                         <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="glass-surface rounded-xl p-3 border border-cyan-900/60">
-                                <div class="font-hud text-lg font-bold text-cyan-300" id="statAccuracy">100%</div>
-                                <div class="text-[10px] text-slate-400 font-mono mt-1">闖關完成度</div>
+                            <div class="glass-surface rounded-xl p-2.5 border border-cyan-900/60">
+                                <div class="font-hud text-xl font-bold text-cyan-300" id="statAccuracy">100%</div>
+                                <div class="text-[12px] text-slate-300 font-mono mt-0.5">闖關完成度</div>
                             </div>
-                            <div class="glass-surface rounded-xl p-3 border border-cyan-900/60">
-                                <div class="font-hud text-lg font-bold text-orange-400" id="statNodes">6 / 6</div>
-                                <div class="text-[10px] text-slate-400 font-mono mt-1">探索商品數</div>
+                            <div class="glass-surface rounded-xl p-2.5 border border-cyan-900/60">
+                                <div class="font-hud text-xl font-bold text-orange-400" id="statNodes">6 / 6</div>
+                                <div class="text-[12px] text-slate-300 font-mono mt-0.5">探索商品數</div>
                             </div>
-                            <div class="glass-surface rounded-xl p-3 border border-cyan-900/60">
+                            <div class="glass-surface rounded-xl p-2.5 border border-cyan-900/60">
                                 <div class="text-base font-bold text-emerald-400">闖關完成</div>
-                                <div class="text-[10px] text-slate-400 font-mono mt-1">闖關狀態</div>
+                                <div class="text-[12px] text-slate-300 font-mono mt-0.5">闖關狀態</div>
                             </div>
                         </div>
 
                         <!-- Unlocked Commodities Bento (Style #53) -->
-                        <div class="glass-surface rounded-2xl p-4 hud-bracket-box">
-                            <div class="flex items-center justify-between mb-2.5">
-                                <h3 class="text-xs font-mono text-cyan-400 tracking-wider">// 全球市場商品探索清單</h3>
-                                <span class="text-[10px] font-mono text-slate-400">6 項目錄</span>
+                        <div class="glass-surface rounded-2xl p-3 hud-bracket-box">
+                            <div class="flex items-center justify-between mb-1.5">
+                                <h3 class="text-[12.5px] font-mono text-cyan-400 tracking-wider">// 全球市場商品探索清單</h3>
+                                <span class="text-[11.5px] font-mono text-slate-400">6 項目錄</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-2 text-[11px]">
+                            <div class="grid grid-cols-2 gap-1.5 text-[12.5px]">
                                 <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
                                     <span>AI 股選擇權</span>
@@ -618,24 +625,24 @@
                         </div>
 
                         <!-- Booth Engagement Actions -->
-                        <div class="grid grid-cols-2 gap-2.5">
-                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
-                                <div class="w-16 h-16 mx-auto bg-white rounded-lg p-1 mb-2 flex items-center justify-center font-mono text-[9px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
-                                <div class="text-[11px] font-bold text-white">下載 iTRADER 交易達人</div>
-                                <div class="text-[9px] text-cyan-400/80 mt-0.5">現場開戶享專屬好禮</div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
+                                <div class="w-12 h-12 mx-auto bg-white rounded-lg p-1 mb-1.5 flex items-center justify-center font-mono text-[10px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
+                                <div class="text-[12.5px] font-bold text-white">下載 iTRADER</div>
+                                <div class="text-[11px] text-cyan-400/90 mt-0.5">現場開戶享專屬好禮</div>
                             </div>
 
-                            <div class="glass-card-subtle rounded-xl p-3 text-center border border-cyan-900/60">
-                                <div class="w-16 h-16 mx-auto bg-white rounded-lg p-1 mb-2 flex items-center justify-center font-mono text-[9px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
-                                <div class="text-[11px] font-bold text-white">填寫展場問卷</div>
-                                <div class="text-[9px] text-orange-400/80 mt-0.5">兌換限量品牌周邊</div>
+                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
+                                <div class="w-12 h-12 mx-auto bg-white rounded-lg p-1 mb-1.5 flex items-center justify-center font-mono text-[10px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
+                                <div class="text-[12.5px] font-bold text-white">填寫展場問卷</div>
+                                <div class="text-[11px] text-orange-400/90 mt-0.5">兌換限量品牌周邊</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Restart Button -->
-                    <div class="mt-4 mb-2">
-                        <button onclick="showScreen('intro')" class="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 font-semibold text-xs tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
+                    <div class="mt-3 mb-1">
+                        <button onclick="showScreen('intro')" class="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-[14.5px] tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
                             <span>&#x21bb;</span>
                             <span>重新開始挑戰</span>
                         </button>
@@ -807,10 +814,10 @@
           <div class="w-6 h-6 rounded bg-[#0b2447] border border-cyan-500/50 flex items-center justify-center font-hud text-xs font-bold text-cyan-300 flex-shrink-0">
             ${opt.letter}
           </div>
-          <div class="flex-1 text-[15px] font-medium text-slate-100 leading-snug">
+          <div class="flex-1 text-[15.5px] font-medium text-slate-100 leading-snug">
             ${opt.text}
           </div>
-          <div class="check-icon hidden text-emerald-400 font-bold text-sm">✓</div>
+          <div class="check-icon hidden text-emerald-400 font-bold text-base">✓</div>
         `;
                     card.onclick = () => selectOpt(card, opt, q);
                     optionsWrap.appendChild(card);
