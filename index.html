@@ -492,8 +492,8 @@
                 </section>
 
                 <!-- ================= SCREEN 2: QUIZ (Spatial HUD Interactive) ================= -->
-                <section id="view-quiz" class="p-3 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll hidden">
-                    <div class="space-y-2 flex-1 flex flex-col justify-between">
+                <section id="view-quiz" class="p-3 sm:p-4 flex flex-col h-full flex-1 overflow-y-auto screen-scroll hidden">
+                    <div class="flex flex-col gap-3">
                         <!-- Telemetry Progress Strip -->
                         <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-500/20 flex-shrink-0">
                             <div class="flex items-center justify-between text-[12.5px] mb-1.5">
@@ -510,54 +510,54 @@
                             </div>
                         </div>
 
-                        <!-- Question Bento Card (Responsive Height, Zero Jitter) -->
-                        <div class="glass-surface rounded-2xl p-2.5 sm:p-3 hud-bracket-box flex flex-col gap-2 flex-shrink-0">
+                        <!-- Question Bento Card (Natural Flow, Complete Text & Image) -->
+                        <div class="glass-surface rounded-2xl p-3 sm:p-3.5 hud-bracket-box flex flex-col gap-2.5">
                             <!-- Responsive Image Frame -->
-                            <div class="w-full h-[120px] xs:h-[135px] sm:h-[155px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0">
+                            <div class="w-full h-[160px] xs:h-[180px] sm:h-[200px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0">
                                 <img id="qImg" src="" alt="情境圖" class="w-full h-full object-cover object-center hidden" onload="onImgLoaded()" onerror="onImgError()" />
 
                                 <!-- Q6 Icon Layout Mode -->
-                                <div id="qIconContainer" class="flex flex-col items-center justify-center gap-1.5 p-2 text-center hidden">
-                                    <div class="w-14 h-14 rounded-xl bg-white p-2 shadow-lg shadow-cyan-500/20 border border-cyan-400/40">
+                                <div id="qIconContainer" class="flex flex-col items-center justify-center gap-2 p-3 text-center hidden">
+                                    <div class="w-16 h-16 rounded-xl bg-white p-2 shadow-lg shadow-cyan-500/20 border border-cyan-400/40">
                                         <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" />
                                     </div>
-                                    <div class="px-2.5 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-[12px] font-bold text-cyan-300 font-mono tracking-wide">iTRADER 交易達人</div>
-                                    <div class="text-[11.5px] text-slate-400 max-w-[260px]">多元海內外期權商品 · 自訂智慧策略監控</div>
+                                    <div class="px-3 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-[12.5px] font-bold text-cyan-300 font-mono tracking-wide">iTRADER 交易達人</div>
+                                    <div class="text-[12px] text-slate-300 max-w-[280px]">多元海內外期權商品 · 自訂智慧策略監控</div>
                                 </div>
 
                                 <!-- Fallback State -->
                                 <div id="qFallback" class="flex flex-col items-center justify-center p-3 text-center">
-                                    <div class="w-7 h-7 rounded-full bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-mono mb-1 animate-pulse">AI</div>
-                                    <span class="text-[13px] text-slate-300 font-medium" id="fallbackTitle">市場情境載入中</span>
+                                    <div class="w-8 h-8 rounded-full bg-cyan-950/60 border border-cyan-500/30 flex items-center justify-center text-cyan-400 text-xs font-mono mb-1 animate-pulse">AI</div>
+                                    <span class="text-[13.5px] text-slate-200 font-medium" id="fallbackTitle">市場情境載入中</span>
                                     <span class="text-[11.5px] font-mono text-cyan-400/70 mt-0.5" id="fallbackName">q1_ai_chip.jpg</span>
                                 </div>
                             </div>
 
-                            <!-- Question Title Area -->
-                            <div class="min-h-[50px] max-h-[70px] flex items-center justify-start w-full overflow-hidden px-1">
-                                <h2 id="qTitle" class="text-[15.5px] xs:text-[16.5px] font-medium text-white leading-snug tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em;">載入中...</h2>
+                            <!-- Question Title Area (Fully unconstrained for complete readability) -->
+                            <div class="w-full px-1 py-1">
+                                <h2 id="qTitle" class="text-[16px] xs:text-[16.5px] font-medium text-white leading-relaxed tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em;">載入中...</h2>
                             </div>
                         </div>
 
                         <!-- Options Group -->
-                        <div id="optionsWrap" class="space-y-1.5 flex-shrink-0">
+                        <div id="optionsWrap" class="space-y-2">
                             <!-- Dynamically injected via JS -->
                         </div>
 
                         <!-- Feedback & Explanation Panels -->
-                        <div id="hintBox" class="glass-card-subtle rounded-xl p-2.5 border-l-4 border-amber-400 text-left hidden flex-shrink-0">
+                        <div id="hintBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-amber-400 text-left hidden">
                             <div class="text-[13px] font-bold text-amber-400 flex items-center gap-1 mb-1">
                                 <span>請重新選擇（參考提示）</span>
                             </div>
-                            <p id="hintMsg" class="text-[13.5px] text-slate-200 leading-snug"></p>
+                            <p id="hintMsg" class="text-[13.5px] text-slate-200 leading-relaxed"></p>
                         </div>
 
-                        <div id="correctBox" class="glass-card-subtle rounded-xl p-2.5 border-l-4 border-emerald-400 text-left hidden space-y-2 flex-shrink-0">
+                        <div id="correctBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-emerald-400 text-left hidden space-y-2.5">
                             <div class="text-[13px] font-bold text-emerald-400 flex items-center gap-1">
                                 <span>✓ 答題正確</span>
                             </div>
-                            <p id="expMsg" class="text-[13.5px] text-slate-200 leading-snug"></p>
-                            <button onclick="nextQ()" id="btnNext" class="w-full h-10 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-[14.5px] tracking-wider uppercase hover:opacity-95 cursor-pointer shadow-md shadow-cyan-500/20">下一題 ➔</button>
+                            <p id="expMsg" class="text-[13.5px] text-slate-200 leading-relaxed"></p>
+                            <button onclick="nextQ()" id="btnNext" class="w-full h-11 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-[15px] tracking-wider uppercase hover:opacity-95 cursor-pointer shadow-md shadow-cyan-500/20">下一題 ➔</button>
                         </div>
                     </div>
                 </section>
