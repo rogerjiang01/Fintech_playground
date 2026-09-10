@@ -661,15 +661,15 @@
 
         <!-- Interactive JavaScript Engine -->
         <script>
-            // Quiz Database
+            // Quiz Database (完整對照 Fintech_playground.md 原文，完整保留無刪減)
             const quizData = [
                 {
                     id: 1,
                     topic: "AI 龍頭股與選擇權",
                     imageFile: "q1_ai_chip.jpg",
-                    title: "主流 AI 龍頭股的股價動輒數百甚至上千元，身為散戶的你想參與行情，卻不想投入巨大資本，也不希望承擔難以預期的風險，你可以透過哪個商品類型參與？",
-                    hint: "想找一個能放大財務槓桿，同時把最大損失鎖定在已支付權利金內的商品類型。",
-                    explanation: "買進選擇權買權只需要支付少許的權利金，就能參與高價 AI 股的漲跌幅；同時，買方的最大可能損失預先鎖定在已支付的權利金內，下檔風險可控。",
+                    title: "主流AI龍頭股的股價動輒數百甚至上千元，身為散戶的你想參與行情，卻不想投入巨大資本，也不希望承擔難以預期的風險，你可以透過哪個商品類型參與？",
+                    hint: "想找一個能放大財務槓桿同時把風險控制在你能承受範圍內的商品類型。",
+                    explanation: "買進選擇權買權只需要支付少許的權利金，就能參與高價AI股的漲跌幅；同時，買方的最大可能損失預先鎖定在已支付的權利金內，下檔風險可控。這讓資金有限的投資人也能安心參與AI龍頭股的行情。選擇權可透過iTRADER的國內外選擇權下單服務交易。",
                     options: [
                         { letter: "A", text: "選擇權", correct: true },
                         { letter: "B", text: "基金", correct: false },
@@ -680,13 +680,13 @@
                     id: 2,
                     topic: "AI 資料中心與原物料",
                     imageFile: "q2_copper.jpg",
-                    title: "AI 資料中心之間，以及資料中心到各地用戶的數據傳輸，需要大量佈建電纜線路。這股基礎建設需求最直接反映在哪個商品？",
-                    hint: "想想電纜與高負載電力傳輸線路最常用哪一種金屬原料？",
-                    explanation: "銅是電纜與電力線路佈建的核心原料，銅期貨能高度反映 AI 資料中心擴建連結網路時所帶動的原物料需求。",
+                    title: "AI資料中心之間，以及資料中心到各地用戶的數據傳輸，需要大量佈建電纜線路。這股基礎建設需求最直接反映在哪個商品？",
+                    hint: "想想電纜線路最常用哪一種金屬做的？",
+                    explanation: "銅是電纜與電力線路佈建的重要原料，銅期貨能反映AI資料中心擴建連結網路時所帶動的原物料需求，可透過iTRADER的國外期貨下單交易。",
                     options: [
                         { letter: "A", text: "銅期貨", correct: true },
-                        { letter: "B", text: "NVIDIA 選擇權", correct: false },
-                        { letter: "C", text: "微型 S&P 指數期貨", correct: false },
+                        { letter: "B", text: "NVIDIA選擇權", correct: false },
+                        { letter: "C", text: "小SP指數期貨", correct: false },
                     ],
                 },
                 {
@@ -694,8 +694,8 @@
                     topic: "美股部位保護",
                     imageFile: "q3_microsoft.jpg",
                     title: "假設你已經透過複委託持有微軟美股，財報公布前你想替這筆投資加一層價格保護，可以透過哪個商品做到？",
-                    hint: "想想有什麼衍生性金融商品可以替現貨股票「買保險」防範重挫？",
-                    explanation: "選擇權可用來為手中的美股部位建立避險價格保護，這是現貨股票本身無法直接做到的風險管理方式。",
+                    hint: "想想有什麼工具可以幫股票投資「上保險」？",
+                    explanation: "選擇權可用來為手中的美股部位建立價格保護，這是股票本身無法直接做到的風險管理方式，微軟選擇權可透過iTRADER的Cboe商品下單服務交易。",
                     options: [
                         { letter: "A", text: "微軟選擇權", correct: true },
                         { letter: "B", text: "小那斯達克期貨", correct: false },
@@ -706,26 +706,26 @@
                     id: 4,
                     topic: "公債殖利率與籌資成本",
                     imageFile: "q4_bond.jpg",
-                    title: "科技巨頭近年大舉發債為 AI 資料中心籌措資金，美國公債殖利率走向牽動整體投資成本。如果想直接參與市場對「利率」本身的看法，可以透過哪個商品？",
-                    hint: "想想「利率」本身不是一家公司，無法買股票，但能透過哪種國家公債合約參與？",
-                    explanation: "利率本身沒有股票可以直接買賣；美國十年公債期貨讓交易人直接參與市場對長期利率走勢的預期。",
+                    title: "科技巨頭近年大舉發債，為AI資料中心建設籌措資金，美國公債殖利率走向也牽動整體AI投資成本。如果想直接參與市場對「利率」本身的看法，可以透過哪個商品？",
+                    hint: "想想「利率」本身算不算一家公司，能不能直接買它的股票？",
+                    explanation: "利率本身不是一家公司，沒有股票或ETF可以直接持有；美國十年債期貨讓交易人直接參與市場對長期利率走勢的預期，可透過iTRADER的國外期貨下單交易。科技巨頭近年大舉發債為AI資料中心籌資，使利率走向與AI投資成本息息相關。",
                     options: [
-                        { letter: "A", text: "美國十年公債期貨", correct: true },
+                        { letter: "A", text: "美國十年債期貨", correct: true },
                         { letter: "B", text: "微軟股票", correct: false },
-                        { letter: "C", text: "黃金現貨", correct: false },
+                        { letter: "C", text: "天然氣期貨", correct: false },
                     ],
                 },
                 {
                     id: 5,
                     topic: "恐慌指數與市場情緒",
                     imageFile: "q5_vix.jpg",
-                    title: "當市場對 AI 相關消息反應劇烈、行情大幅震盪時，哪個商品專門用來反映這種波動程度？",
-                    hint: "全名為芝加哥選擇權交易所波動率指數，常被市場通稱為恐慌指標。",
-                    explanation: "VIX 為芝加哥選擇權交易所波動率指數，反映市場對未來 30 天波動的預期，是觀察市場情緒極具指標性的商品。",
+                    title: "當市場對AI相關消息反應劇烈行情大幅震盪時，哪個商品專門用來反映這種波動程度？",
+                    hint: "找一個名字裡藏著「波動」概念的商品。",
+                    explanation: "VIX全名為芝加哥選擇權交易所波動率指數，反映市場對未來波動的預期，VIX指數期貨可透過iTRADER的國外期貨下單，是觀察市場情緒與緊張程度的重要商品。",
                     options: [
-                        { letter: "A", text: "VIX 波動率指數期貨", correct: true },
-                        { letter: "B", text: "微型 S&P 指數期貨", correct: false },
-                        { letter: "C", text: "原油期貨", correct: false },
+                        { letter: "A", text: "芝加哥選擇權交易所波動率指數期貨(VIX指數期貨)", correct: true },
+                        { letter: "B", text: "小SP指數期貨", correct: false },
+                        { letter: "C", text: "銅期貨", correct: false },
                     ],
                 },
                 {
@@ -733,13 +733,13 @@
                     topic: "iTRADER 交易達人",
                     imageFile: "iTRADER_logo.svg",
                     isIcon: true,
-                    title: "想要隨時掌握全球市場脈動、掌握 AI 浪潮下的多元投資機會，哪一個行動軟體能為你提供完整的期貨與選擇權交易服務？",
-                    hint: "元大期貨專為海內外期貨與選擇權策略交易量身打造的旗艦交易平台。",
-                    explanation: "元大期貨 iTRADER 串聯國內外多元期權商品，提供直覺高效的下單體驗，是把握 AI 全球行情的最佳武器。",
+                    title: "以上這些全球商品 AI晶片股原物料、指數與波動率，可透過元大期貨哪個平台一站掌握？",
+                    hint: "答案就印在你眼前的攤位海報上。",
+                    explanation: "iTRADER整合國內外期貨與選擇權商品，提供下單、策略工具與版面配置，一站掌握全球機會。",
                     options: [
-                        { letter: "A", text: "元大期貨 iTRADER", correct: true },
-                        { letter: "B", text: "一般社群通訊軟體", correct: false },
-                        { letter: "C", text: "網路購物商城", correct: false },
+                        { letter: "A", text: "iTRADER交易達人", correct: true },
+                        { letter: "B", text: "AI自動選股系統", correct: false },
+                        { letter: "C", text: "元大期貨行情機器人", correct: false },
                     ],
                 },
             ];
