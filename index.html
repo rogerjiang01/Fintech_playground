@@ -37,6 +37,14 @@
         <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;600;700;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet" />
 
+        <!-- Preload Question Images for Instant Display -->
+        <link rel="preload" as="image" href="q1_ai_chip.jpg" />
+        <link rel="preload" as="image" href="q2_copper.jpg" />
+        <link rel="preload" as="image" href="q3_microsoft.jpg" />
+        <link rel="preload" as="image" href="q4_bond.jpg" />
+        <link rel="preload" as="image" href="q5_vix.jpg" />
+        <link rel="preload" as="image" href="iTRADER_logo.svg" />
+
         <style>
             * {
                 box-sizing: border-box;
@@ -783,11 +791,18 @@
                     iconBox.classList.remove("hidden");
                 } else {
                     iconBox.classList.add("hidden");
-                    imgElem.classList.add("hidden");
-                    fallbackBox.classList.remove("hidden");
-                    document.getElementById("fallbackTitle").textContent = `${q.topic} 情境圖載入中`;
-                    document.getElementById("fallbackName").textContent = q.imageFile;
                     imgElem.src = q.imageFile;
+
+                    // If image is already downloaded / cached in memory, show immediately with zero delay
+                    if (imgElem.complete && imgElem.naturalWidth > 0) {
+                        fallbackBox.classList.add("hidden");
+                        imgElem.classList.remove("hidden");
+                    } else {
+                        imgElem.classList.add("hidden");
+                        fallbackBox.classList.remove("hidden");
+                        document.getElementById("fallbackTitle").textContent = `${q.topic} 情境圖載入中`;
+                        document.getElementById("fallbackName").textContent = q.imageFile;
+                    }
                 }
 
                 // Reset panels
@@ -894,6 +909,22 @@
                     if (p < 1) requestAnimationFrame(update);
                 }
                 requestAnimationFrame(update);
+            }
+
+            // Preload all quiz images into browser cache immediately on page load
+            function preloadQuizImages() {
+                quizData.forEach(q => {
+                    if (!q.isIcon && q.imageFile) {
+                        const preloadImg = new Image();
+                        preloadImg.src = q.imageFile;
+                    }
+                });
+            }
+
+            if (document.readyState === "loading") {
+                document.addEventListener("DOMContentLoaded", preloadQuizImages);
+            } else {
+                preloadQuizImages();
             }
         </script>
     </body>
