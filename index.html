@@ -423,8 +423,8 @@
 
                             <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
                                 <div class="w-6 h-6 mx-auto rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center font-hud text-xs font-bold mb-1 border border-emerald-500/30">03</div>
-                                <div class="text-[12.5px] font-bold text-white leading-tight">攤位闖關集章</div>
-                                <div class="text-[11px] text-slate-300 mt-0.5">兌換大會限量好禮</div>
+                                <div class="text-[12.5px] font-bold text-white leading-tight">兌換期貨限量好禮</div>
+                                <div class="text-[11px] text-slate-300 mt-0.5">攤位闖關集章</div>
                             </div>
                         </div>
 
@@ -543,7 +543,7 @@
 
                             <!-- Question Title Area (Fully unconstrained for complete readability) -->
                             <div class="w-full px-1 py-1">
-                                <h2 id="qTitle" class="text-[16px] xs:text-[16.5px] font-medium text-white leading-relaxed tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em;">載入中...</h2>
+                                <h2 id="qTitle" class="text-[16px] xs:text-[16.5px] font-medium text-white leading-relaxed tracking-[0.05em]" style="font-weight: 500; letter-spacing: 0.05em">載入中...</h2>
                             </div>
                         </div>
 
@@ -571,89 +571,112 @@
                 </section>
 
                 <!-- ================= SCREEN 3: RESULT (Holographic Mission Accomplished) ================= -->
-                <section id="view-result" class="p-3.5 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll hidden">
-                    <div class="space-y-2.5">
+                <section id="view-result" class="p-2.5 sm:p-3.5 flex flex-col h-full flex-1 overflow-y-auto screen-scroll hidden">
+                    <div class="space-y-1.5 sm:space-y-2 pb-2">
                         <!-- Mission Stamp Banner -->
-                        <div class="glass-card-subtle rounded-xl px-3 py-2.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
+                        <div class="glass-card-subtle rounded-xl px-3 py-1.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                <span class="text-[13.5px] font-bold">攤位闖關集章認證完畢</span>
+                                <span class="text-[13px] font-bold">攤位闖關集章認證完畢</span>
                             </div>
-                            <span class="text-[12px] tracking-widest text-emerald-300 font-bold">[已認證]</span>
+                            <span class="text-[11.5px] tracking-widest text-emerald-300 font-bold">[已認證]</span>
                         </div>
 
                         <!-- Stats Bento -->
-                        <div class="grid grid-cols-3 gap-2 text-center">
-                            <div class="glass-surface rounded-xl p-2.5 border border-cyan-900/60">
-                                <div class="font-hud text-xl font-bold text-cyan-300" id="statAccuracy">100%</div>
-                                <div class="text-[12px] text-slate-300 font-mono mt-0.5">闖關完成度</div>
+                        <div class="grid grid-cols-3 gap-1.5 text-center">
+                            <div class="glass-surface rounded-xl p-1.5 sm:p-2 border border-cyan-900/60">
+                                <div class="font-hud text-lg sm:text-xl font-bold text-cyan-300" id="statAccuracy">100%</div>
+                                <div class="text-[11px] text-slate-300 font-mono mt-0.5">闖關完成度</div>
                             </div>
-                            <div class="glass-surface rounded-xl p-2.5 border border-cyan-900/60">
-                                <div class="font-hud text-xl font-bold text-orange-400" id="statNodes">6 / 6</div>
-                                <div class="text-[12px] text-slate-300 font-mono mt-0.5">探索商品數</div>
+                            <div class="glass-surface rounded-xl p-1.5 sm:p-2 border border-cyan-900/60">
+                                <div class="font-hud text-lg sm:text-xl font-bold text-orange-400" id="statNodes">6 / 6</div>
+                                <div class="text-[11px] text-slate-300 font-mono mt-0.5">探索商品數</div>
                             </div>
-                            <div class="glass-surface rounded-xl p-2.5 border border-cyan-900/60">
-                                <div class="text-base font-bold text-emerald-400">闖關完成</div>
-                                <div class="text-[12px] text-slate-300 font-mono mt-0.5">闖關狀態</div>
+                            <div class="glass-surface rounded-xl p-1.5 sm:p-2 border border-cyan-900/60">
+                                <div class="text-[13.5px] sm:text-[14px] font-bold text-emerald-400">闖關完成</div>
+                                <div class="text-[11px] text-slate-300 font-mono mt-0.5">闖關狀態</div>
                             </div>
                         </div>
 
                         <!-- Unlocked Commodities Bento (Style #53) -->
-                        <div class="glass-surface rounded-2xl p-3 hud-bracket-box">
-                            <div class="flex items-center justify-between mb-1.5">
-                                <h3 class="text-[12.5px] font-mono text-cyan-400 tracking-wider">// 全球市場商品探索清單</h3>
-                                <span class="text-[11.5px] font-mono text-slate-400">6 項目錄</span>
+                        <div class="glass-surface rounded-2xl p-2.5 hud-bracket-box">
+                            <div class="flex items-center justify-between mb-1">
+                                <h3 class="text-[12px] font-mono text-cyan-400 tracking-wider">// 全球市場商品探索清單</h3>
+                                <span class="text-[11px] font-mono text-slate-400">6 項目錄</span>
                             </div>
-                            <div class="grid grid-cols-2 gap-1.5 text-[12.5px]">
-                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400"></span>
-                                    <span>AI 股選擇權</span>
+                            <div class="grid grid-cols-2 gap-1.5 text-[12px]">
+                                <div class="py-1 px-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 flex-shrink-0"></span>
+                                    <span class="truncate">AI 股選擇權</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-                                    <span>銅期貨 (電纜原料)</span>
+                                <div class="py-1 px-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-orange-400 flex-shrink-0"></span>
+                                    <span class="truncate">銅期貨 (電纜原料)</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                                    <span>微軟期權 (部位保護)</span>
+                                <div class="py-1 px-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-blue-400 flex-shrink-0"></span>
+                                    <span class="truncate">微軟期權 (部位保護)</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
-                                    <span>美國十年債期貨</span>
+                                <div class="py-1 px-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-purple-400 flex-shrink-0"></span>
+                                    <span class="truncate">美國十年債期貨</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
-                                    <span>VIX 波動率指數</span>
+                                <div class="py-1 px-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-1.5">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-rose-400 flex-shrink-0"></span>
+                                    <span class="truncate">VIX 波動率指數</span>
                                 </div>
-                                <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-cyan-300 flex items-center gap-2 font-bold">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-                                    <span>iTRADER 交易達人</span>
+                                <div class="py-1 px-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-cyan-300 flex items-center gap-1.5 font-bold">
+                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 flex-shrink-0"></span>
+                                    <span class="truncate">iTRADER 交易達人</span>
                                 </div>
                             </div>
                         </div>
 
                         <!-- Booth Engagement Actions -->
-                        <div class="grid grid-cols-2 gap-2">
-                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
-                                <div class="w-12 h-12 mx-auto bg-white rounded-lg p-1 mb-1.5 flex items-center justify-center font-mono text-[10px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
-                                <div class="text-[12.5px] font-bold text-white">下載 iTRADER</div>
-                                <div class="text-[11px] text-cyan-400/90 mt-0.5">現場開戶享專屬好禮</div>
+                        <div class="grid grid-cols-2 gap-1.5">
+                            <div class="glass-card-subtle rounded-xl p-2 border border-cyan-900/60 flex items-center gap-2">
+                                <div class="w-9 h-9 flex-shrink-0 bg-white rounded-md flex items-center justify-center font-mono text-[8px] text-slate-900 font-bold border border-cyan-400">[QR]</div>
+                                <div class="min-w-0 text-left">
+                                    <div class="text-[12px] font-bold text-white truncate">下載 iTRADER</div>
+                                    <div class="text-[10.5px] text-cyan-400/90 truncate">你的期貨交易好幫手</div>
+                                </div>
                             </div>
 
-                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
-                                <div class="w-12 h-12 mx-auto bg-white rounded-lg p-1 mb-1.5 flex items-center justify-center font-mono text-[10px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
-                                <div class="text-[12.5px] font-bold text-white">填寫展場問卷</div>
-                                <div class="text-[11px] text-orange-400/90 mt-0.5">兌換限量品牌周邊</div>
+                            <div class="glass-card-subtle rounded-xl p-2 border border-cyan-900/60 flex items-center gap-2">
+                                <div class="w-9 h-9 flex-shrink-0 bg-white rounded-md flex items-center justify-center font-mono text-[8px] text-slate-900 font-bold border border-cyan-400">[QR]</div>
+                                <div class="min-w-0 text-left">
+                                    <div class="text-[12px] font-bold text-white truncate">填寫展場問卷</div>
+                                    <div class="text-[10.5px] text-orange-400/90 truncate">兌換期貨限量好禮</div>
+                                </div>
                             </div>
                         </div>
-                    </div>
 
-                    <!-- Restart Button -->
-                    <div class="mt-3 mb-1">
-                        <button onclick="showScreen('intro')" class="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-[14.5px] tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
-                            <span>&#x21bb;</span>
-                            <span>重新開始挑戰</span>
-                        </button>
+                        <!-- Restart Button -->
+                        <div class="pt-0.5">
+                            <button onclick="showScreen('intro')" class="w-full h-9.5 sm:h-10 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-[13.5px] tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
+                                <span>&#x21bb;</span>
+                                <span>重新開始挑戰</span>
+                            </button>
+                        </div>
+
+                        <!-- Regulatory & Compliance Disclaimer -->
+                        <div class="glass-card-subtle rounded-xl p-2.5 border border-cyan-900/40 text-[11px] text-[#8092a4] font-normal text-left mt-1 space-y-1" style="line-height: 1.3;">
+                            <div class="space-y-0.5 border-b border-cyan-900/40 pb-1.5">
+                                <div>公司名稱：元大期貨股份有限公司</div>
+                                <div>公司地址：台北市中山區南京東路二段77號2樓(部分)、3樓、4樓、5樓</div>
+                                <div>客服專線：(02)2326-1000 / 0800-333-338(僅供市話撥打)</div>
+                                <div>
+                                    客服信箱：<a href="mailto:futures@yuanta.com" class="underline hover:text-cyan-300 text-[#94a3b8]">futures@yuanta.com</a>
+                                </div>
+                                <div>許可證字號：115年金管期總字第015號</div>
+                                <div>
+                                    隱私權保護聲明：<a href="https://www.yuantafutures.com.tw/Privacy" target="_blank" rel="noopener noreferrer" class="underline hover:text-cyan-300 text-[#94a3b8] break-all">https://www.yuantafutures.com.tw/Privacy</a>
+                                </div>
+                            </div>
+                            <div class="pt-0.5">
+                                <div>警語：期權及槓桿保證金契約各類型交易，皆具高財務槓桿特性，交易人可能承受極大的損失亦或有極大獲利，且需承擔交易上及其他損失之風險（該風險可能極為重大）；又使用電子式交易，仍可能面臨斷線、斷電、網路壅塞等不確定因素，致使買賣指令無法即時傳送或延遲。以上風險甚為簡要，對所有投資風險及影響市場行情之因素無法逐一詳述，交易人應依自身之財務狀況、經驗、目標及其他相關情況，審慎評估此類交易是否合宜，交易人也應確認完全瞭解個別契約、交易及合約權利義務特性及所暴露損失風險的特性及範圍後為之。且本公司將不負責工具或任何交易所產生的任何損失。</div>
+                            </div>
+                        </div>
                     </div>
                 </section>
             </main>
@@ -752,11 +775,17 @@
                 document.getElementById("view-result").classList.add("hidden");
 
                 if (name === "intro") {
-                    document.getElementById("view-intro").classList.remove("hidden");
+                    const el = document.getElementById("view-intro");
+                    el.classList.remove("hidden");
+                    el.scrollTop = 0;
                 } else if (name === "quiz") {
-                    document.getElementById("view-quiz").classList.remove("hidden");
+                    const el = document.getElementById("view-quiz");
+                    el.classList.remove("hidden");
+                    el.scrollTop = 0;
                 } else if (name === "result") {
-                    document.getElementById("view-result").classList.remove("hidden");
+                    const el = document.getElementById("view-result");
+                    el.classList.remove("hidden");
+                    el.scrollTop = 0;
                     animateCounters();
                 }
             }
@@ -856,11 +885,17 @@
                     hintBox.classList.add("hidden");
                     document.getElementById("expMsg").textContent = q.explanation;
                     correctBox.classList.remove("hidden");
+                    setTimeout(() => {
+                        correctBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                    }, 40);
                 } else {
                     card.classList.add("wrong");
                     card.classList.add("disabled");
                     document.getElementById("hintMsg").textContent = q.hint;
                     hintBox.classList.remove("hidden");
+                    setTimeout(() => {
+                        hintBox.scrollIntoView({ behavior: "smooth", block: "nearest" });
+                    }, 40);
                 }
             }
 
@@ -913,7 +948,7 @@
 
             // Preload all quiz images into browser cache immediately on page load
             function preloadQuizImages() {
-                quizData.forEach(q => {
+                quizData.forEach((q) => {
                     if (!q.isIcon && q.imageFile) {
                         const preloadImg = new Image();
                         preloadImg.src = q.imageFile;
