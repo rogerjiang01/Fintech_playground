@@ -525,7 +525,7 @@
                                 <img id="qImg" src="" alt="情境圖" class="w-full h-full object-cover object-center hidden" onload="onImgLoaded()" onerror="onImgError()" />
 
                                 <!-- Q6 Custom Background Layer (35% opacity, deep blue underlay) -->
-                                <img id="q6BgImg" src="q6_itrader_bg.jpg" alt="iTRADER 背景" class="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none hidden transition-opacity duration-300" style="opacity: 0.35;" onerror="this.style.visibility='hidden'" onload="this.style.visibility='visible'" />
+                                <img id="q6BgImg" src="q6_itrader_bg.jpg" alt="iTRADER 背景" class="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none hidden transition-opacity duration-300" style="opacity: 0.35" onerror="this.style.visibility = 'hidden'" onload="this.style.visibility = 'visible'" />
 
                                 <!-- Q6 Icon Layout Mode -->
                                 <div id="qIconContainer" class="relative z-10 flex flex-col items-center justify-center gap-2 p-3 text-center hidden">
@@ -618,11 +618,11 @@
                                 </div>
                                 <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-orange-400"></span>
-                                    <span>銅期貨 (電纜原料)</span>
+                                    <span>銅期貨</span>
                                 </div>
                                 <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-blue-400"></span>
-                                    <span>微軟期權 (部位保護)</span>
+                                    <span>微軟期權</span>
                                 </div>
                                 <div class="p-2 rounded-lg bg-[#051429] border border-cyan-800/40 text-slate-200 flex items-center gap-2">
                                     <span class="w-1.5 h-1.5 rounded-full bg-purple-400"></span>
@@ -653,22 +653,22 @@
                                 <div class="w-12 h-12 mx-auto bg-white rounded-xl p-1.5 mb-1.5 flex items-center justify-center border border-orange-400/40 shadow-sm shadow-orange-500/20 group-hover:shadow-orange-400/30 transition-shadow">
                                     <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
                                         <!-- Clipboard Base -->
-                                        <rect x="7" y="6" width="26" height="30" rx="4" fill="#FFF7ED" stroke="#F97316" stroke-width="2"/>
+                                        <rect x="7" y="6" width="26" height="30" rx="4" fill="#FFF7ED" stroke="#F97316" stroke-width="2" />
                                         <!-- Clip Header -->
-                                        <path d="M15 4C15 3.44772 15.4477 3 16 3H24C24.5523 3 25 3.44772 25 4V7H15V4Z" fill="#EA580C"/>
-                                        <circle cx="20" cy="5" r="1" fill="white"/>
+                                        <path d="M15 4C15 3.44772 15.4477 3 16 3H24C24.5523 3 25 3.44772 25 4V7H15V4Z" fill="#EA580C" />
+                                        <circle cx="20" cy="5" r="1" fill="white" />
                                         <!-- Questionnaire item 1 -->
-                                        <rect x="11" y="12" width="4" height="4" rx="1" fill="#10B981"/>
-                                        <path d="M11.8 14L13 15.2L15.2 13" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <rect x="18" y="13" width="11" height="2" rx="1" fill="#475569"/>
+                                        <rect x="11" y="12" width="4" height="4" rx="1" fill="#10B981" />
+                                        <path d="M11.8 14L13 15.2L15.2 13" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                                        <rect x="18" y="13" width="11" height="2" rx="1" fill="#475569" />
                                         <!-- Questionnaire item 2 -->
-                                        <rect x="11" y="19" width="4" height="4" rx="1" fill="#10B981"/>
-                                        <path d="M11.8 21L13 22.2L15.2 20" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <rect x="18" y="20" width="11" height="2" rx="1" fill="#475569"/>
+                                        <rect x="11" y="19" width="4" height="4" rx="1" fill="#10B981" />
+                                        <path d="M11.8 21L13 22.2L15.2 20" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                                        <rect x="18" y="20" width="11" height="2" rx="1" fill="#475569" />
                                         <!-- Questionnaire item 3 -->
-                                        <rect x="11" y="26" width="4" height="4" rx="1" fill="#F97316"/>
-                                        <path d="M11.8 28L13 29.2L15.2 27" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
-                                        <rect x="18" y="27" width="8" height="2" rx="1" fill="#94A3B8"/>
+                                        <rect x="11" y="26" width="4" height="4" rx="1" fill="#F97316" />
+                                        <path d="M11.8 28L13 29.2L15.2 27" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round" />
+                                        <rect x="18" y="27" width="8" height="2" rx="1" fill="#94A3B8" />
                                     </svg>
                                 </div>
                                 <div class="text-[12.5px] font-bold text-white group-hover:text-orange-300 transition-colors">填寫展場問卷</div>
@@ -685,21 +685,25 @@
                         </div>
 
                         <!-- Regulatory & Compliance Disclaimer -->
-                        <div class="glass-card-subtle rounded-xl p-3 border border-cyan-900/40 text-[11px] text-[#8092a4] font-normal space-y-1.5 text-left mt-2" style="line-height: 1.3;">
+                        <div class="glass-card-subtle rounded-xl p-3 border border-cyan-900/40 text-[11px] text-[#8092a4] font-normal space-y-1.5 text-left mt-2" style="line-height: 1.3">
                             <div class="space-y-1 border-b border-cyan-900/40 pb-2">
                                 <div>公司名稱：元大期貨股份有限公司</div>
                                 <div>公司地址：台北市中山區南京東路二段77號2樓(部分)、3樓、4樓、5樓</div>
                                 <div>客服專線：(02)2326-1000 / 0800-333-338(僅供市話撥打)</div>
                                 <div>
-                                    客服信箱：<a href="mailto:futures@yuanta.com" class="underline hover:text-cyan-300 text-[#94a3b8]">futures@yuanta.com</a>
+                                    客服信箱：
+                                    <a href="mailto:futures@yuanta.com" class="underline hover:text-cyan-300 text-[#94a3b8]">futures@yuanta.com</a>
                                 </div>
                                 <div>許可證字號：115年金管期總字第015號</div>
                                 <div>
-                                    隱私權保護聲明：<a href="https://www.yuantafutures.com.tw/Privacy" target="_blank" rel="noopener noreferrer" class="underline hover:text-cyan-300 text-[#94a3b8] break-all">https://www.yuantafutures.com.tw/Privacy</a>
+                                    隱私權保護聲明：
+                                    <a href="https://www.yuantafutures.com.tw/Privacy" target="_blank" rel="noopener noreferrer" class="underline hover:text-cyan-300 text-[#94a3b8] break-all">https://www.yuantafutures.com.tw/Privacy</a>
                                 </div>
                             </div>
                             <div class="pt-1">
-                                <div>警語：期權及槓桿保證金契約各類型交易，皆具高財務槓桿特性，交易人可能承受極大的損失亦或有極大獲利，且需承擔交易上及其他損失之風險（該風險可能極為重大）；又使用電子式交易，仍可能面臨斷線、斷電、網路壅塞等不確定因素，致使買賣指令無法即時傳送或延遲。以上風險甚為簡要，對所有投資風險及影響市場行情之因素無法逐一詳述，交易人應依自身之財務狀況、經驗、目標及其他相關情況，審慎評估此類交易是否合宜，交易人也應確認完全瞭解個別契約、交易及合約權利義務特性及所暴露損失風險的特性及範圍後為之。且本公司將不負責工具或任何交易所產生的任何損失。</div>
+                                <div>
+                                    警語：期權及槓桿保證金契約各類型交易，皆具高財務槓桿特性，交易人可能承受極大的損失亦或有極大獲利，且需承擔交易上及其他損失之風險（該風險可能極為重大）；又使用電子式交易，仍可能面臨斷線、斷電、網路壅塞等不確定因素，致使買賣指令無法即時傳送或延遲。以上風險甚為簡要，對所有投資風險及影響市場行情之因素無法逐一詳述，交易人應依自身之財務狀況、經驗、目標及其他相關情況，審慎評估此類交易是否合宜，交易人也應確認完全瞭解個別契約、交易及合約權利義務特性及所暴露損失風險的特性及範圍後為之。且本公司將不負責工具或任何交易所產生的任何損失。
+                                </div>
                             </div>
                         </div>
                     </div>
