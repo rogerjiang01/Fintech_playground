@@ -423,7 +423,7 @@
 
                             <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
                                 <div class="w-6 h-6 mx-auto rounded-lg bg-emerald-500/15 text-emerald-300 flex items-center justify-center font-hud text-xs font-bold mb-1 border border-emerald-500/30">03</div>
-                                <div class="text-[12.5px] font-bold text-white leading-tight">兌換期貨限量好禮</div>
+                                <div class="text-[12.5px] font-bold text-white leading-tight">兌換限量好禮</div>
                                 <div class="text-[11px] text-slate-300 mt-0.5">攤位闖關集章</div>
                             </div>
                         </div>
@@ -432,7 +432,7 @@
                         <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-800/40 flex items-center gap-2 text-[12px] font-mono overflow-hidden">
                             <div class="flex items-center gap-1.5 text-cyan-400 font-bold flex-shrink-0">
                                 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
-                                <span>即時報價</span>
+                                <span>探索市場</span>
                             </div>
                             <div class="ticker-wrap flex-1">
                                 <div class="ticker-track text-[12.5px]">
@@ -521,16 +521,19 @@
                         <!-- Question Bento Card (Natural Flow, Complete Text & Image) -->
                         <div class="glass-surface rounded-2xl p-3 sm:p-3.5 hud-bracket-box flex flex-col gap-2.5">
                             <!-- Responsive Image Frame -->
-                            <div class="w-full h-[160px] xs:h-[180px] sm:h-[200px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0">
+                            <div id="qImgFrame" class="w-full h-[160px] xs:h-[180px] sm:h-[200px] rounded-xl overflow-hidden relative bg-[#020712] border border-cyan-900/70 flex items-center justify-center flex-shrink-0 transition-colors duration-300">
                                 <img id="qImg" src="" alt="情境圖" class="w-full h-full object-cover object-center hidden" onload="onImgLoaded()" onerror="onImgError()" />
 
+                                <!-- Q6 Custom Background Layer (35% opacity, deep blue underlay) -->
+                                <img id="q6BgImg" src="q6_itrader_bg.jpg" alt="iTRADER 背景" class="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none hidden transition-opacity duration-300" style="opacity: 0.35;" onerror="this.style.visibility='hidden'" onload="this.style.visibility='visible'" />
+
                                 <!-- Q6 Icon Layout Mode -->
-                                <div id="qIconContainer" class="flex flex-col items-center justify-center gap-2 p-3 text-center hidden">
+                                <div id="qIconContainer" class="relative z-10 flex flex-col items-center justify-center gap-2 p-3 text-center hidden">
                                     <div class="w-16 h-16 rounded-xl bg-white p-2 shadow-lg shadow-cyan-500/20 border border-cyan-400/40">
                                         <img src="iTRADER_logo.svg" alt="iTRADER 交易達人" class="w-full h-full object-contain" />
                                     </div>
-                                    <div class="px-3 py-0.5 rounded-full bg-cyan-950 border border-cyan-500/40 text-[12.5px] font-bold text-cyan-300 font-mono tracking-wide">iTRADER 交易達人</div>
-                                    <div class="text-[12px] text-slate-300 max-w-[280px]">多元海內外期權商品 · 自訂智慧策略監控</div>
+                                    <div class="px-3 py-0.5 rounded-full bg-cyan-950/90 border border-cyan-500/40 text-[12.5px] font-bold text-cyan-300 font-mono tracking-wide backdrop-blur-sm">iTRADER 交易達人</div>
+                                    <div class="text-[12px] text-slate-200 max-w-[280px] drop-shadow-sm">多元海內外期權商品 · 自訂智慧策略監控</div>
                                 </div>
 
                                 <!-- Fallback State -->
@@ -560,9 +563,13 @@
                             <p id="hintMsg" class="text-[13.5px] text-slate-200 leading-relaxed"></p>
                         </div>
 
-                        <div id="correctBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-emerald-400 text-left hidden space-y-2.5">
+                        <div id="correctBox" class="glass-card-subtle rounded-xl p-3 border-l-4 border-emerald-400 text-left hidden space-y-2">
                             <div class="text-[13px] font-bold text-emerald-400 flex items-center gap-1">
                                 <span>✓ 答題正確</span>
+                            </div>
+                            <div id="expChannel" class="text-[13px] font-bold text-cyan-300 flex items-start gap-1.5 hidden">
+                                <span class="text-cyan-400 flex-shrink-0 mt-0.5">▸</span>
+                                <span id="expChannelText" class="leading-relaxed"></span>
                             </div>
                             <p id="expMsg" class="text-[13.5px] text-slate-200 leading-relaxed"></p>
                             <button onclick="nextQ()" id="btnNext" class="w-full h-11 rounded-lg bg-gradient-to-r from-blue-600 to-cyan-500 text-white font-bold text-[15px] tracking-wider uppercase hover:opacity-95 cursor-pointer shadow-md shadow-cyan-500/20">下一題 ➔</button>
@@ -634,17 +641,39 @@
 
                         <!-- Booth Engagement Actions -->
                         <div class="grid grid-cols-2 gap-2">
-                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
-                                <div class="w-12 h-12 mx-auto bg-white rounded-lg p-1 mb-1.5 flex items-center justify-center font-mono text-[10px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
-                                <div class="text-[12.5px] font-bold text-white">下載 iTRADER</div>
+                            <a href="https://www.yuantafutures.com.tw/tradeplatform" target="_blank" rel="noopener noreferrer" class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60 flex flex-col items-center justify-center hover:border-cyan-500/70 hover:bg-cyan-950/30 transition-all duration-200 cursor-pointer group active:scale-[0.98]">
+                                <div class="w-12 h-12 mx-auto bg-white rounded-xl p-1 mb-1.5 flex items-center justify-center border border-cyan-400/40 shadow-sm shadow-cyan-500/20 group-hover:shadow-cyan-400/30 transition-shadow">
+                                    <img src="iTRADER_logo.svg" alt="iTRADER" class="w-full h-full object-contain" />
+                                </div>
+                                <div class="text-[12.5px] font-bold text-white group-hover:text-cyan-300 transition-colors">下載 iTRADER</div>
                                 <div class="text-[11px] text-cyan-400/90 mt-0.5">你的期貨交易好幫手</div>
-                            </div>
+                            </a>
 
-                            <div class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60">
-                                <div class="w-12 h-12 mx-auto bg-white rounded-lg p-1 mb-1.5 flex items-center justify-center font-mono text-[10px] text-slate-900 font-bold border border-cyan-400">[QR CODE]</div>
-                                <div class="text-[12.5px] font-bold text-white">填寫展場問卷</div>
+                            <a href="https://forms.gle/wg2Xi9UVgD1jmKpW8" target="_blank" rel="noopener noreferrer" class="glass-card-subtle rounded-xl p-2.5 text-center border border-cyan-900/60 flex flex-col items-center justify-center hover:border-orange-500/70 hover:bg-orange-950/20 transition-all duration-200 cursor-pointer group active:scale-[0.98]">
+                                <div class="w-12 h-12 mx-auto bg-white rounded-xl p-1.5 mb-1.5 flex items-center justify-center border border-orange-400/40 shadow-sm shadow-orange-500/20 group-hover:shadow-orange-400/30 transition-shadow">
+                                    <svg class="w-8 h-8" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                        <!-- Clipboard Base -->
+                                        <rect x="7" y="6" width="26" height="30" rx="4" fill="#FFF7ED" stroke="#F97316" stroke-width="2"/>
+                                        <!-- Clip Header -->
+                                        <path d="M15 4C15 3.44772 15.4477 3 16 3H24C24.5523 3 25 3.44772 25 4V7H15V4Z" fill="#EA580C"/>
+                                        <circle cx="20" cy="5" r="1" fill="white"/>
+                                        <!-- Questionnaire item 1 -->
+                                        <rect x="11" y="12" width="4" height="4" rx="1" fill="#10B981"/>
+                                        <path d="M11.8 14L13 15.2L15.2 13" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <rect x="18" y="13" width="11" height="2" rx="1" fill="#475569"/>
+                                        <!-- Questionnaire item 2 -->
+                                        <rect x="11" y="19" width="4" height="4" rx="1" fill="#10B981"/>
+                                        <path d="M11.8 21L13 22.2L15.2 20" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <rect x="18" y="20" width="11" height="2" rx="1" fill="#475569"/>
+                                        <!-- Questionnaire item 3 -->
+                                        <rect x="11" y="26" width="4" height="4" rx="1" fill="#F97316"/>
+                                        <path d="M11.8 28L13 29.2L15.2 27" stroke="white" stroke-width="1" stroke-linecap="round" stroke-linejoin="round"/>
+                                        <rect x="18" y="27" width="8" height="2" rx="1" fill="#94A3B8"/>
+                                    </svg>
+                                </div>
+                                <div class="text-[12.5px] font-bold text-white group-hover:text-orange-300 transition-colors">填寫展場問卷</div>
                                 <div class="text-[11px] text-orange-400/90 mt-0.5">兌換期貨限量好禮</div>
-                            </div>
+                            </a>
                         </div>
 
                         <!-- Restart Button -->
@@ -688,10 +717,11 @@
                     imageFile: "q1_ai_chip.jpg",
                     title: "主流AI龍頭股的股價動輒數百甚至上千元，身為散戶的你想參與行情，卻不想投入巨大資本，也不希望承擔難以預期的風險，你可以透過哪個商品類型參與？",
                     hint: "想找一個能放大財務槓桿同時把風險控制在你能承受範圍內的商品類型。",
-                    explanation: "買進選擇權買權只需要支付少許的權利金，就能參與高價AI股的漲跌幅；同時，買方的最大可能損失預先鎖定在已支付的權利金內，下檔風險可控。這讓資金有限的投資人也能安心參與AI龍頭股的行情。選擇權可透過iTRADER的國內外選擇權下單服務交易。",
+                    channel: "選擇權可透過 iTRADER 的國內外選擇權下單服務交易。",
+                    explanation: "買進選擇權買權只需要支付少許的權利金，就能參與高價AI股的漲跌幅；同時，買方的最大可能損失預先鎖定在已支付的權利金內，下檔風險可控。這讓資金有限的投資人也能安心參與AI龍頭股的行情。",
                     options: [
-                        { letter: "A", text: "選擇權", correct: true },
-                        { letter: "B", text: "基金", correct: false },
+                        { letter: "A", text: "基金", correct: false },
+                        { letter: "B", text: "選擇權", correct: true },
                         { letter: "C", text: "保險", correct: false },
                     ],
                 },
@@ -701,11 +731,12 @@
                     imageFile: "q2_copper.jpg",
                     title: "AI資料中心之間，以及資料中心到各地用戶的數據傳輸，需要大量佈建電纜線路。這股基礎建設需求最直接反映在哪個商品？",
                     hint: "想想電纜線路最常用哪一種金屬做的？",
-                    explanation: "銅是電纜與電力線路佈建的重要原料，銅期貨能反映AI資料中心擴建連結網路時所帶動的原物料需求，可透過iTRADER的國外期貨下單交易。",
+                    channel: "銅期貨可透過 iTRADER 的國外期貨下單交易。",
+                    explanation: "銅是電纜與電力線路佈建的重要原料，銅期貨能反映AI資料中心擴建連結網路時所帶動的原物料需求。",
                     options: [
-                        { letter: "A", text: "銅期貨", correct: true },
-                        { letter: "B", text: "NVIDIA選擇權", correct: false },
-                        { letter: "C", text: "小SP指數期貨", correct: false },
+                        { letter: "A", text: "NVIDIA選擇權", correct: false },
+                        { letter: "B", text: "小SP指數期貨", correct: false },
+                        { letter: "C", text: "銅期貨", correct: true },
                     ],
                 },
                 {
@@ -714,7 +745,8 @@
                     imageFile: "q3_microsoft.jpg",
                     title: "假設你已經透過複委託持有微軟美股，財報公布前你想替這筆投資加一層價格保護，可以透過哪個商品做到？",
                     hint: "想想有什麼工具可以幫股票投資「上保險」？",
-                    explanation: "選擇權可用來為手中的美股部位建立價格保護，這是股票本身無法直接做到的風險管理方式，微軟選擇權可透過iTRADER的Cboe商品下單服務交易。",
+                    channel: "微軟選擇權可透過 iTRADER 的 Cboe 商品下單服務交易。",
+                    explanation: "選擇權可用來為手中的美股部位建立價格保護，這是股票本身無法直接做到的風險管理方式。",
                     options: [
                         { letter: "A", text: "微軟選擇權", correct: true },
                         { letter: "B", text: "小那斯達克期貨", correct: false },
@@ -727,11 +759,12 @@
                     imageFile: "q4_bond.jpg",
                     title: "科技巨頭近年大舉發債，為AI資料中心建設籌措資金，美國公債殖利率走向也牽動整體AI投資成本。如果想直接參與市場對「利率」本身的看法，可以透過哪個商品？",
                     hint: "想想「利率」本身算不算一家公司，能不能直接買它的股票？",
-                    explanation: "利率本身不是一家公司，沒有股票或ETF可以直接持有；美國十年債期貨讓交易人直接參與市場對長期利率走勢的預期，可透過iTRADER的國外期貨下單交易。科技巨頭近年大舉發債為AI資料中心籌資，使利率走向與AI投資成本息息相關。",
+                    channel: "美國十年債期貨可透過 iTRADER 的國外期貨下單交易。",
+                    explanation: "利率本身不是一家公司，沒有股票或ETF可以直接持有；美國十年債期貨讓交易人直接參與市場對長期利率走勢的預期。科技巨頭近年大舉發債為AI資料中心籌資，使利率走向與AI投資成本息息相關。",
                     options: [
-                        { letter: "A", text: "美國十年債期貨", correct: true },
-                        { letter: "B", text: "微軟股票", correct: false },
-                        { letter: "C", text: "天然氣期貨", correct: false },
+                        { letter: "A", text: "AAPL 股票", correct: false },
+                        { letter: "B", text: "天然氣期貨", correct: false },
+                        { letter: "C", text: "美國十年債期貨", correct: true },
                     ],
                 },
                 {
@@ -740,10 +773,11 @@
                     imageFile: "q5_vix.jpg",
                     title: "當市場對AI相關消息反應劇烈行情大幅震盪時，哪個商品專門用來反映這種波動程度？",
                     hint: "找一個名字裡藏著「波動」概念的商品。",
-                    explanation: "VIX全名為芝加哥選擇權交易所波動率指數，反映市場對未來波動的預期，VIX指數期貨可透過iTRADER的國外期貨下單，是觀察市場情緒與緊張程度的重要商品。",
+                    channel: "VIX指數期貨可透過 iTRADER 的國外期貨下單交易。",
+                    explanation: "VIX全名為芝加哥選擇權交易所波動率指數，反映市場對未來波動的預期，是觀察市場情緒與緊張程度的重要商品。",
                     options: [
-                        { letter: "A", text: "芝加哥選擇權交易所波動率指數期貨(VIX指數期貨)", correct: true },
-                        { letter: "B", text: "小SP指數期貨", correct: false },
+                        { letter: "A", text: "小SP指數期貨", correct: false },
+                        { letter: "B", text: "芝加哥選擇權交易所波動率指數期貨(VIX指數期貨)", correct: true },
                         { letter: "C", text: "銅期貨", correct: false },
                     ],
                 },
@@ -753,12 +787,13 @@
                     imageFile: "iTRADER_logo.svg",
                     isIcon: true,
                     title: "以上這些全球商品 AI晶片股原物料、指數與波動率，可透過元大期貨哪個平台一站掌握？",
-                    hint: "答案就印在你眼前的攤位海報上。",
+                    hint: "答案就在圖片中。",
+                    channel: "海內外期權商品皆可透過 iTRADER 一站下單交易。",
                     explanation: "iTRADER整合國內外期貨與選擇權商品，提供下單、策略工具與版面配置，一站掌握全球機會。",
                     options: [
                         { letter: "A", text: "iTRADER交易達人", correct: true },
-                        { letter: "B", text: "AI自動選股系統", correct: false },
-                        { letter: "C", text: "元大期貨行情機器人", correct: false },
+                        { letter: "B", text: "元大期貨行情機器人", correct: false },
+                        { letter: "C", text: "AI自動選股系統", correct: false },
                     ],
                 },
             ];
@@ -809,13 +844,19 @@
                 const imgElem = document.getElementById("qImg");
                 const iconBox = document.getElementById("qIconContainer");
                 const fallbackBox = document.getElementById("qFallback");
+                const qImgFrame = document.getElementById("qImgFrame");
+                const q6BgImg = document.getElementById("q6BgImg");
 
                 if (q.isIcon) {
                     imgElem.classList.add("hidden");
                     fallbackBox.classList.add("hidden");
                     iconBox.classList.remove("hidden");
+                    if (q6BgImg) q6BgImg.classList.remove("hidden");
+                    if (qImgFrame) qImgFrame.style.backgroundColor = "#081d3d";
                 } else {
                     iconBox.classList.add("hidden");
+                    if (q6BgImg) q6BgImg.classList.add("hidden");
+                    if (qImgFrame) qImgFrame.style.backgroundColor = "#020712";
                     imgElem.src = q.imageFile;
 
                     // If image is already downloaded / cached in memory, show immediately with zero delay
@@ -879,6 +920,13 @@
                     document.getElementById("progressBar").style.width = `${completedPct}%`;
 
                     hintBox.classList.add("hidden");
+                    const channelBox = document.getElementById("expChannel");
+                    if (q.channel) {
+                        document.getElementById("expChannelText").textContent = q.channel;
+                        channelBox.classList.remove("hidden");
+                    } else {
+                        channelBox.classList.add("hidden");
+                    }
                     document.getElementById("expMsg").textContent = q.explanation;
                     correctBox.classList.remove("hidden");
                     setTimeout(() => {
@@ -950,6 +998,8 @@
                         preloadImg.src = q.imageFile;
                     }
                 });
+                const q6Bg = new Image();
+                q6Bg.src = "q6_itrader_bg.jpg";
             }
 
             if (document.readyState === "loading") {
@@ -957,6 +1007,27 @@
             } else {
                 preloadQuizImages();
             }
+
+            // ================= 80 秒無操作自動返回首頁 =================
+            const IDLE_TIMEOUT_MS = 80000;
+            let idleTimer = null;
+
+            function resetIdleTimer() {
+                if (idleTimer) clearTimeout(idleTimer);
+                idleTimer = setTimeout(() => {
+                    const introSection = document.getElementById("view-intro");
+                    if (introSection && introSection.classList.contains("hidden")) {
+                        showScreen("intro");
+                    }
+                }, IDLE_TIMEOUT_MS);
+            }
+
+            const activityEvents = ["pointerdown", "touchstart", "mousedown", "keydown", "scroll", "click"];
+            activityEvents.forEach((evt) => {
+                window.addEventListener(evt, resetIdleTimer, { passive: true });
+            });
+
+            resetIdleTimer();
         </script>
     </body>
 </html>
