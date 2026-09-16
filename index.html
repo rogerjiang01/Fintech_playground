@@ -38,7 +38,6 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;600;700;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet" />
 
         <!-- Preload Question Images for Instant Display -->
-        <link rel="preload" as="image" href="background.jpg" />
         <link rel="preload" as="image" href="q1_ai_chip.jpg" />
         <link rel="preload" as="image" href="q2_copper.jpg" />
         <link rel="preload" as="image" href="q3_microsoft.jpg" />
@@ -87,10 +86,19 @@
                 inset: 0;
                 pointer-events: none;
                 z-index: 0;
-                background-image: radial-gradient(circle at 20% 15%, rgba(0, 110, 255, 0.22) 0%, transparent 45%), radial-gradient(circle at 80% 85%, rgba(0, 229, 255, 0.16) 0%, transparent 50%), linear-gradient(rgba(2, 6, 15, 0.78), rgba(2, 6, 15, 0.88)), url("background.jpg");
-                background-size: cover;
-                background-position: center center;
-                background-repeat: no-repeat;
+                background-color: #02060f;
+                background-image: radial-gradient(circle at 20% 15%, rgba(0, 110, 255, 0.16) 0%, transparent 45%), radial-gradient(circle at 80% 85%, rgba(0, 229, 255, 0.08) 0%, transparent 50%);
+            }
+
+            /* Starfield Canvas (Three.js，取代 background.jpg，全站共用) */
+            #starfield {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                display: block;
+                pointer-events: none;
+                z-index: 0;
             }
 
             /* Subtle Cyber HUD Grid Overlay */
@@ -106,8 +114,9 @@
             /* Glassmorphism Surface (Style #55 + #03) */
             .glass-surface {
                 background: rgba(8, 23, 44, 0.72);
-                backdrop-filter: blur(20px);
-                -webkit-backdrop-filter: blur(20px);
+                /* 模糊調低，讓星空能隱約透過卡片 */
+                backdrop-filter: blur(6px);
+                -webkit-backdrop-filter: blur(6px);
                 border: 1px solid rgba(0, 229, 255, 0.22);
                 box-shadow:
                     0 10px 30px -10px rgba(0, 0, 0, 0.7),
@@ -116,7 +125,8 @@
 
             .glass-card-subtle {
                 background: rgba(5, 16, 32, 0.65);
-                backdrop-filter: blur(16px);
+                backdrop-filter: blur(4px);
+                -webkit-backdrop-filter: blur(4px);
                 border: 1px solid rgba(0, 140, 255, 0.25);
             }
 
@@ -155,7 +165,7 @@
                 z-index: 10;
                 display: flex;
                 flex-direction: column;
-                background: #040d1a;
+                background: rgba(4, 13, 26, 0.35);
                 overflow: hidden;
                 transition: all 0.3s ease;
             }
@@ -164,11 +174,8 @@
             .app-bg-layer {
                 position: absolute;
                 inset: 0;
-                background-image: url("background.jpg");
-                background-size: cover;
-                background-position: center top;
-                background-repeat: no-repeat;
-                opacity: 0.65;
+                /* 保留景深的淡色光暈，讓星空透出 */
+                background-image: radial-gradient(120% 55% at 50% 0%, rgba(0, 102, 204, 0.16) 0%, transparent 60%), radial-gradient(90% 45% at 50% 100%, rgba(0, 229, 255, 0.06) 0%, transparent 70%);
                 pointer-events: none;
                 z-index: 0;
             }
@@ -457,11 +464,42 @@
             .ticker-track:hover {
                 animation-play-state: paused;
             }
+            /* Intro 3D Globe (Three.js) */
+            .intro-globe {
+                position: relative;
+                flex: 1 1 auto;
+                min-height: 140px;
+                /* 地球區域可直接拖曳：手指在這裡滑動不會觸發頁面捲動 */
+                touch-action: none;
+            }
+            .intro-globe canvas {
+                position: absolute;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                display: block;
+                -webkit-mask-image: linear-gradient(180deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+                mask-image: linear-gradient(180deg, transparent 0%, #000 10%, #000 90%, transparent 100%);
+            }
+            .intro-globe.globe-fallback::before {
+                content: "";
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                width: min(62%, 240px);
+                aspect-ratio: 1;
+                transform: translate(-50%, -50%);
+                border-radius: 50%;
+                border: 1px solid rgba(0, 229, 255, 0.35);
+                background: radial-gradient(circle at 35% 35%, rgba(0, 229, 255, 0.28), rgba(0, 102, 204, 0.18) 50%, transparent 72%);
+                box-shadow: 0 0 60px rgba(0, 153, 255, 0.25);
+            }
         </style>
     </head>
     <body>
         <!-- Ambient Visual FX -->
         <div class="ambient-mesh"></div>
+        <canvas id="starfield" aria-hidden="true"></canvas>
         <div class="hud-grid-overlay"></div>
 
         <!-- Desktop Presentation Bar (For Live Demos & Clean Screenshots) -->
@@ -480,7 +518,7 @@
 
         <!-- Phone Screen Device Container -->
         <div class="device-container" id="deviceContainer">
-            <!-- App Background Layer (background.jpg) -->
+            <!-- App Background Layer (gradient glow over starfield) -->
             <div class="app-bg-layer" id="appBgLayer"></div>
 
             <!-- Pure Safe Area Top Space (Visible only in desktop mockup frame) -->
@@ -611,6 +649,10 @@
                                     </span>
                                 </div>
                             </div>
+                        </div>
+                        <!-- AI 全球市場連線：3D 地球動畫（填補首頁中段空白） -->
+                        <div id="introGlobe" class="intro-globe" aria-hidden="true">
+                            <canvas id="introGlobeCanvas"></canvas>
                         </div>
                     </div>
 
@@ -1137,8 +1179,6 @@
                         preloadImg.src = q.imageFile;
                     }
                 });
-                const bg = new Image();
-                bg.src = "background.jpg";
                 const q6Bg = new Image();
                 q6Bg.src = "q6_itrader_bg.jpg";
             }
@@ -1242,6 +1282,622 @@
                     console.error("URL routing error:", err);
                 }
             })();
+        </script>
+        <!-- ================= 首頁 3D 地球（Three.js）================= -->
+        <script type="importmap">
+            { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js" } }
+        </script>
+        <script type="module">
+            import * as THREE from "three";
+
+            const wrap = document.getElementById("introGlobe");
+            const canvas = document.getElementById("introGlobeCanvas");
+            const mqReduce = window.matchMedia("(prefers-reduced-motion: reduce)");
+
+            /* 色票：直接讀取 tailwind.config 的 brand 色，確保與頁面一致 */
+            const brand = (window.tailwind && tailwind.config && tailwind.config.theme && tailwind.config.theme.extend && tailwind.config.theme.extend.colors && tailwind.config.theme.extend.colors.brand) || {};
+            const C = {
+                navy: new THREE.Color(brand.navy || "#030b18"),
+                blue: new THREE.Color(brand.blue || "#0066cc"),
+                sky: new THREE.Color("#0099ff"), // start-cta-btn 漸層中段
+                cyan: new THREE.Color(brand.cyan || "#00e5ff"),
+                orange: new THREE.Color(brand.orange || "#ff7700"),
+            };
+            const v3 = (c) => new THREE.Vector3(c.r, c.g, c.b);
+
+            /* 3D value noise：程式化產生抽象大陸 */
+            function hash(x, y, z) { const h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return h - Math.floor(h); }
+            function noise3(x, y, z) {
+                const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
+                const xf = x - xi, yf = y - yi, zf = z - zi;
+                const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
+                const L = (a, b, t) => a + (b - a) * t;
+                return L(
+                    L(L(hash(xi, yi, zi), hash(xi + 1, yi, zi), u), L(hash(xi, yi + 1, zi), hash(xi + 1, yi + 1, zi), u), v),
+                    L(L(hash(xi, yi, zi + 1), hash(xi + 1, yi, zi + 1), u), L(hash(xi, yi + 1, zi + 1), hash(xi + 1, yi + 1, zi + 1), u), v),
+                    w
+                );
+            }
+            function fbm(x, y, z) { let s = 0, a = 0.5, f = 1; for (let i = 0; i < 4; i++) { s += a * noise3(x * f, y * f, z * f); f *= 2; a *= 0.5; } return s; }
+
+            const FACING_GLSL = `
+                float facing(vec3 p, vec4 mv) {
+                    vec3 n = normalize(normalMatrix * normalize(p));
+                    return dot(n, normalize(-mv.xyz));
+                }
+            `;
+
+            function initGlobe() {
+                if (!wrap || !canvas) return;
+
+                const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true, powerPreference: "high-performance" });
+                renderer.setClearColor(0x000000, 0);
+
+                const scene = new THREE.Scene();
+                const camera = new THREE.PerspectiveCamera(40, 1, 0.1, 100);
+                camera.position.set(0, 0, 6);
+
+                const U = {
+                    uTime: { value: 0 },
+                    uPixelRatio: { value: 1 },
+                    uReveal: { value: 0 },
+                    uBlue: { value: v3(C.blue) },
+                    uSky: { value: v3(C.sky) },
+                    uCyan: { value: v3(C.cyan) },
+                    uOrange: { value: v3(C.orange) },
+                };
+                const COLOR_UNIFORMS = "uniform vec3 uBlue, uSky, uCyan, uOrange;";
+                const additive = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
+
+                const root = new THREE.Group();
+                const tilt = new THREE.Group();
+                const spin = new THREE.Group();
+                tilt.rotation.z = THREE.MathUtils.degToRad(-16);
+                root.add(tilt);
+                tilt.add(spin);
+                scene.add(root);
+
+                /* 1. 地球粒子 */
+                const N = 11000;
+                const golden = Math.PI * (3 - Math.sqrt(5));
+                const gPos = [], gRnd = [], gLand = [], landPts = [];
+                for (let i = 0; i < N; i++) {
+                    const y = 1 - (i / (N - 1)) * 2;
+                    const r = Math.sqrt(1 - y * y);
+                    const th = golden * i;
+                    const x = Math.cos(th) * r, z = Math.sin(th) * r;
+                    const isLand = fbm(x * 1.8 + 11.3, y * 1.8 + 3.7, z * 1.8 + 7.1) > 0.5;
+                    if (!isLand && Math.random() > 0.26) continue;
+                    gPos.push(x, y, z);
+                    gRnd.push(Math.random());
+                    gLand.push(isLand ? 1 : 0);
+                    if (isLand) landPts.push(new THREE.Vector3(x, y, z));
+                }
+                const globeGeo = new THREE.BufferGeometry();
+                globeGeo.setAttribute("position", new THREE.Float32BufferAttribute(gPos, 3));
+                globeGeo.setAttribute("aRandom", new THREE.Float32BufferAttribute(gRnd, 1));
+                globeGeo.setAttribute("aLand", new THREE.Float32BufferAttribute(gLand, 1));
+                spin.add(new THREE.Points(globeGeo, new THREE.ShaderMaterial({
+                    ...additive,
+                    uniforms: { ...U, uSize: { value: 3.2 } },
+                    vertexShader: `
+                        uniform float uTime, uPixelRatio, uReveal, uSize; ${COLOR_UNIFORMS}
+                        attribute float aRandom, aLand;
+                        varying vec3 vColor; varying float vAlpha;
+                        ${FACING_GLSL}
+                        void main() {
+                            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                            float f = facing(position, mv);
+                            float front = smoothstep(-0.15, 0.55, f);
+                            float scan = smoothstep(0.07, 0.0, abs(position.y - sin(uTime * 0.35) * 0.95));
+                            float twinkle = 0.7 + 0.3 * sin(uTime * (1.0 + aRandom * 2.0) + aRandom * 62.8);
+
+                            vec3 ocean = uBlue * 0.75;
+                            vec3 land  = mix(uSky, uCyan, smoothstep(-0.7, 0.9, position.y + aRandom * 0.3));
+                            vec3 col   = mix(ocean, land, aLand);
+                            col = mix(col, uBlue, smoothstep(0.55, 0.05, f) * 0.8);   // 邊緣收進元大藍
+                            col += uCyan * scan * 0.8;
+
+                            vColor = col;
+                            vAlpha = mix(0.06, 1.0, front) * mix(0.35, 1.0, aLand) * twinkle * uReveal + scan * front * 0.45;
+                            float size = uSize * mix(0.55, 1.0, aLand) * (0.7 + aRandom * 0.6) * (1.0 + scan * 0.7);
+                            gl_PointSize = size * uPixelRatio * (6.0 / -mv.z) * (0.4 + 0.6 * uReveal);
+                            gl_Position = projectionMatrix * mv;
+                        }
+                    `,
+                    fragmentShader: `
+                        varying vec3 vColor; varying float vAlpha;
+                        void main() {
+                            float d = length(gl_PointCoord - 0.5);
+                            gl_FragColor = vec4(vColor, smoothstep(0.5, 0.05, d) * vAlpha);
+                        }
+                    `,
+                })));
+
+                /* 2. 經緯網格 */
+                const gridPos = [], SEG = 128;
+                for (let lat = -75; lat <= 75; lat += 15) {
+                    const phi = THREE.MathUtils.degToRad(lat), yy = Math.sin(phi), rr = Math.cos(phi);
+                    for (let s = 0; s < SEG; s++) {
+                        const a0 = (s / SEG) * Math.PI * 2, a1 = ((s + 1) / SEG) * Math.PI * 2;
+                        gridPos.push(Math.cos(a0) * rr, yy, Math.sin(a0) * rr, Math.cos(a1) * rr, yy, Math.sin(a1) * rr);
+                    }
+                }
+                for (let lon = 0; lon < 180; lon += 15) {
+                    const th = THREE.MathUtils.degToRad(lon), c = Math.cos(th), sn = Math.sin(th);
+                    for (let s = 0; s < SEG; s++) {
+                        const t0 = (s / SEG) * Math.PI * 2, t1 = ((s + 1) / SEG) * Math.PI * 2;
+                        gridPos.push(Math.cos(t0) * c, Math.sin(t0), Math.cos(t0) * sn, Math.cos(t1) * c, Math.sin(t1), Math.cos(t1) * sn);
+                    }
+                }
+                const gridGeo = new THREE.BufferGeometry();
+                gridGeo.setAttribute("position", new THREE.Float32BufferAttribute(gridPos, 3));
+                const grid = new THREE.LineSegments(gridGeo, new THREE.ShaderMaterial({
+                    ...additive,
+                    uniforms: { ...U },
+                    vertexShader: `
+                        varying float vFront; varying float vY;
+                        ${FACING_GLSL}
+                        void main() {
+                            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                            vFront = smoothstep(-0.1, 0.6, facing(position, mv));
+                            vY = position.y;
+                            gl_Position = projectionMatrix * mv;
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uReveal; ${COLOR_UNIFORMS}
+                        varying float vFront; varying float vY;
+                        void main() {
+                            vec3 col = mix(uBlue, uCyan, vY * 0.5 + 0.5);
+                            gl_FragColor = vec4(col, mix(0.012, 0.14, vFront) * uReveal);
+                        }
+                    `,
+                }));
+                grid.scale.setScalar(1.004);
+                spin.add(grid);
+
+                /* 3. 市場連線弧線 + 節點脈衝（青 → 橘，呼應 HUD 角標與進度條） */
+                const ARC_COUNT = 18, ARC_SEG = 72;
+                const arcPos = [], arcT = [], arcSeed = [], nodePos = [], nodeSeed = [], nodeHue = [];
+                const slerp = (a, b, t, ang) => {
+                    const s = Math.sin(ang);
+                    return a.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(b.clone().multiplyScalar(Math.sin(t * ang) / s));
+                };
+                const pick = () => (landPts.length > 50 ? landPts[(Math.random() * landPts.length) | 0] : new THREE.Vector3().randomDirection());
+                let made = 0, guard = 0;
+                while (made < ARC_COUNT && guard++ < 2000) {
+                    const a = pick(), b = pick(), ang = a.angleTo(b);
+                    if (ang < 0.45 || ang > 2.1) continue;
+                    const h = 0.06 + ang * 0.2, seed = Math.random();
+                    let prev = a.clone();
+                    for (let s = 1; s <= ARC_SEG; s++) {
+                        const t = s / ARC_SEG;
+                        const p = slerp(a, b, t, ang).multiplyScalar(1 + h * Math.sin(Math.PI * t));
+                        arcPos.push(prev.x, prev.y, prev.z, p.x, p.y, p.z);
+                        arcT.push((s - 1) / ARC_SEG, t);
+                        arcSeed.push(seed, seed);
+                        prev = p;
+                    }
+                    nodePos.push(a.x * 1.01, a.y * 1.01, a.z * 1.01, b.x * 1.01, b.y * 1.01, b.z * 1.01);
+                    nodeSeed.push(seed, (seed + 0.5) % 1);
+                    nodeHue.push(0, 1);
+                    made++;
+                }
+                const arcGeo = new THREE.BufferGeometry();
+                arcGeo.setAttribute("position", new THREE.Float32BufferAttribute(arcPos, 3));
+                arcGeo.setAttribute("aT", new THREE.Float32BufferAttribute(arcT, 1));
+                arcGeo.setAttribute("aSeed", new THREE.Float32BufferAttribute(arcSeed, 1));
+                spin.add(new THREE.LineSegments(arcGeo, new THREE.ShaderMaterial({
+                    ...additive,
+                    uniforms: { ...U },
+                    vertexShader: `
+                        attribute float aT, aSeed; varying float vT, vSeed, vFront;
+                        ${FACING_GLSL}
+                        void main() {
+                            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                            vFront = smoothstep(-0.35, 0.35, facing(position, mv));
+                            vT = aT; vSeed = aSeed;
+                            gl_Position = projectionMatrix * mv;
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uTime, uReveal; ${COLOR_UNIFORMS}
+                        varying float vT, vSeed, vFront;
+                        void main() {
+                            float head = fract(uTime * (0.22 + vSeed * 0.28) + vSeed * 7.0) * 1.6 - 0.3;
+                            float d = head - vT;
+                            float trail = step(0.0, d) * smoothstep(0.28, 0.0, d);
+                            vec3 col = mix(uCyan, uOrange, smoothstep(0.35, 1.0, vT));
+                            float a = (0.07 + trail * 0.95) * mix(0.08, 1.0, vFront) * uReveal;
+                            gl_FragColor = vec4(col * (1.0 + trail * 0.6), a);
+                        }
+                    `,
+                })));
+
+                const nodeGeo = new THREE.BufferGeometry();
+                nodeGeo.setAttribute("position", new THREE.Float32BufferAttribute(nodePos, 3));
+                nodeGeo.setAttribute("aSeed", new THREE.Float32BufferAttribute(nodeSeed, 1));
+                nodeGeo.setAttribute("aHue", new THREE.Float32BufferAttribute(nodeHue, 1));
+                spin.add(new THREE.Points(nodeGeo, new THREE.ShaderMaterial({
+                    ...additive,
+                    uniforms: { ...U },
+                    vertexShader: `
+                        uniform float uPixelRatio, uReveal; attribute float aSeed, aHue;
+                        varying float vSeed, vFront, vHue;
+                        ${FACING_GLSL}
+                        void main() {
+                            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                            vFront = smoothstep(0.0, 0.4, facing(position, mv));
+                            vSeed = aSeed; vHue = aHue;
+                            gl_PointSize = 28.0 * uPixelRatio * (6.0 / -mv.z) * uReveal;
+                            gl_Position = projectionMatrix * mv;
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uTime; ${COLOR_UNIFORMS}
+                        varying float vSeed, vFront, vHue;
+                        void main() {
+                            float d = length(gl_PointCoord - 0.5);
+                            float core = smoothstep(0.09, 0.03, d);
+                            float p = fract(uTime * 0.55 + vSeed);
+                            float ring = smoothstep(0.03, 0.0, abs(d - p * 0.46)) * (1.0 - p);
+                            float glow = smoothstep(0.25, 0.0, d) * 0.25;
+                            vec3 col = mix(mix(uCyan, vec3(1.0), 0.35), uOrange, vHue);
+                            gl_FragColor = vec4(col, (core + ring * 0.9 + glow) * vFront);
+                        }
+                    `,
+                })));
+
+                /* 4. 大氣光暈 */
+                const rimMat = new THREE.ShaderMaterial({
+                    ...additive,
+                    uniforms: { ...U },
+                    vertexShader: `
+                        varying vec3 vN, vV;
+                        void main() {
+                            vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                            vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz);
+                            gl_Position = projectionMatrix * mv;
+                        }
+                    `,
+                    fragmentShader: `
+                        uniform float uReveal; ${COLOR_UNIFORMS}
+                        varying vec3 vN, vV;
+                        void main() {
+                            float f = pow(1.0 - max(dot(vN, vV), 0.0), 3.2);
+                            gl_FragColor = vec4(mix(uCyan, uSky, f), f * 0.34 * uReveal);
+                        }
+                    `,
+                });
+                tilt.add(new THREE.Mesh(new THREE.SphereGeometry(1.02, 64, 64), rimMat));
+                tilt.add(new THREE.Mesh(new THREE.SphereGeometry(1.28, 64, 64), new THREE.ShaderMaterial({
+                    ...additive,
+                    side: THREE.BackSide,
+                    uniforms: { ...U },
+                    vertexShader: rimMat.vertexShader,
+                    fragmentShader: `
+                        uniform float uReveal; ${COLOR_UNIFORMS}
+                        varying vec3 vN, vV;
+                        void main() {
+                            float x = -dot(vN, vV);
+                            float g = pow(smoothstep(0.0, 0.62, x) * (1.0 - smoothstep(0.62, 0.9, x)), 1.8);
+                            gl_FragColor = vec4(mix(uBlue, uCyan, g), g * 0.30 * uReveal);
+                        }
+                    `,
+                })));
+
+                /* 5. 軌道環（青色主環 + 元大橘副環） */
+                function makeOrbit(radius, color, speed, dashCount, strength) {
+                    const p = [], t = [], seg = 256;
+                    for (let s = 0; s < seg; s++) {
+                        const a0 = (s / seg) * Math.PI * 2, a1 = ((s + 1) / seg) * Math.PI * 2;
+                        p.push(Math.cos(a0) * radius, 0, Math.sin(a0) * radius, Math.cos(a1) * radius, 0, Math.sin(a1) * radius);
+                        t.push(s / seg, (s + 1) / seg);
+                    }
+                    const geo = new THREE.BufferGeometry();
+                    geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3));
+                    geo.setAttribute("aT", new THREE.Float32BufferAttribute(t, 1));
+                    return new THREE.LineSegments(geo, new THREE.ShaderMaterial({
+                        ...additive,
+                        uniforms: { ...U, uColor: { value: v3(color) }, uSpeed: { value: speed }, uDash: { value: dashCount }, uStrength: { value: strength } },
+                        vertexShader: `
+                            attribute float aT; varying float vT, vBack;
+                            void main() {
+                                vec4 mv = modelViewMatrix * vec4(position, 1.0);
+                                vec4 c = modelViewMatrix * vec4(0.0, 0.0, 0.0, 1.0);
+                                vBack = smoothstep(0.0, 0.6, c.z - mv.z);
+                                vT = aT;
+                                gl_Position = projectionMatrix * mv;
+                            }
+                        `,
+                        fragmentShader: `
+                            uniform float uTime, uReveal, uSpeed, uDash, uStrength; uniform vec3 uColor;
+                            varying float vT, vBack;
+                            void main() {
+                                float dash = step(0.55, fract(vT * uDash));
+                                float head = smoothstep(0.18, 0.0, fract(fract(uTime * uSpeed) - vT));
+                                float a = (dash * 0.14 + head * 0.85) * mix(1.0, 0.25, vBack) * uReveal * uStrength;
+                                gl_FragColor = vec4(uColor * (1.0 + head * 0.6), a);
+                            }
+                        `,
+                    }));
+                }
+                const orbitA = makeOrbit(1.42, C.cyan, 0.08, 180, 1.0);
+                orbitA.rotation.set(THREE.MathUtils.degToRad(74), 0, THREE.MathUtils.degToRad(12));
+                const orbitB = makeOrbit(1.6, C.orange, -0.05, 120, 0.7);
+                orbitB.rotation.set(THREE.MathUtils.degToRad(100), THREE.MathUtils.degToRad(30), THREE.MathUtils.degToRad(-28));
+                tilt.add(orbitA, orbitB);
+
+                /* 容器尺寸自適應：整顆地球（含軌道環）完整收進空白區 */
+                let targetScale = 1, hasSize = false;
+                function layout() {
+                    const w = wrap.clientWidth, h = wrap.clientHeight;
+                    if (!w || !h) { hasSize = false; return; }
+                    hasSize = true;
+                    const pr = Math.min(window.devicePixelRatio || 1, 2);
+                    renderer.setPixelRatio(pr);
+                    renderer.setSize(w, h, false);
+                    U.uPixelRatio.value = pr * Math.min(1, Math.max(0.6, Math.min(w, h) / 320));
+                    camera.aspect = w / h;
+                    camera.updateProjectionMatrix();
+                    const vh = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
+                    const vw = vh * camera.aspect;
+                    targetScale = Math.min(vh, vw) / 2 / 1.5;
+                }
+                layout();
+                root.scale.setScalar(targetScale * 0.85);
+                new ResizeObserver(layout).observe(wrap);
+
+                /* 視差：滑鼠跟隨游標；觸控跟隨手指，放開後緩慢回正 */
+                const pointer = { x: 0, y: 0 }, smooth = { x: 0, y: 0 };
+                let lastInput = "mouse";
+                let releaseTimer = null;
+
+                function followPointer(e) {
+                    if (mqReduce.matches) return;
+                    lastInput = e.pointerType === "touch" || e.pointerType === "pen" ? "touch" : "mouse";
+                    const r = wrap.getBoundingClientRect();
+                    if (!r.width || !r.height) return;
+                    pointer.x = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1.5, 1.5);
+                    pointer.y = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1.5, 1.5);
+                    if (releaseTimer) { clearTimeout(releaseTimer); releaseTimer = null; }
+                }
+                function releaseTouch(e) {
+                    if (e.pointerType === "mouse") return;
+                    if (releaseTimer) clearTimeout(releaseTimer);
+                    releaseTimer = setTimeout(() => { pointer.x = 0; pointer.y = 0; }, 900);
+                }
+
+                window.addEventListener("pointermove", followPointer, { passive: true });
+                window.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") followPointer(e); }, { passive: true });
+                window.addEventListener("pointerup", releaseTouch, { passive: true });
+                window.addEventListener("pointercancel", releaseTouch, { passive: true });
+
+                /* 首頁隱藏（進入答題／結算）時暫停渲染；回到首頁時重播進場 */
+                let visible = true;
+                let revealStart = 0;
+                let elapsed = 0;
+                new IntersectionObserver(([entry]) => {
+                    const now = entry.isIntersecting;
+                    if (now && !visible) { revealStart = elapsed; layout(); }
+                    visible = now;
+                }).observe(wrap);
+
+                const clock = new THREE.Clock();
+                function tick() {
+                    requestAnimationFrame(tick);
+                    const dt = Math.min(clock.getDelta(), 0.05);
+                    if (!visible || !hasSize) return;
+                    elapsed += dt;
+                    U.uTime.value = elapsed;
+
+                    const r = Math.min((elapsed - revealStart) / 2.2, 1);
+                    const ease = 1 - Math.pow(1 - r, 3);
+                    U.uReveal.value = ease;
+
+                    spin.rotation.y += dt * (mqReduce.matches ? 0.03 : 0.075);
+                    orbitA.rotation.y += dt * 0.04;
+                    orbitB.rotation.y -= dt * 0.025;
+
+                    const k = 1 - Math.exp(-dt * (lastInput === "touch" ? 3.5 : 2.5));
+                    smooth.x += (pointer.x - smooth.x) * k;
+                    smooth.y += (pointer.y - smooth.y) * k;
+                    tilt.rotation.x = smooth.y * 0.14;
+                    tilt.rotation.y = smooth.x * 0.2;
+
+                    const kl = 1 - Math.exp(-dt * 5);
+                    root.scale.setScalar(THREE.MathUtils.lerp(root.scale.x, targetScale * (0.85 + 0.15 * ease), kl));
+
+                    renderer.render(scene, camera);
+                }
+                tick();
+            }
+
+            /* ================= 全站星空背景（取代 background.jpg，所有頁面共用）================= */
+            /* 以螢幕空間分布星點：不論手機直式或桌機，密度都一致；星點大小以 CSS px 計算，高解析度手機上也清楚 */
+            function initStarfield() {
+                const starCanvas = document.getElementById("starfield");
+                if (!starCanvas) return;
+
+                const renderer = new THREE.WebGLRenderer({ canvas: starCanvas, antialias: false, alpha: true, powerPreference: "low-power" });
+                renderer.setClearColor(0x000000, 0);
+                const scene = new THREE.Scene();
+                const camera = new THREE.OrthographicCamera(-1, 1, 1, -1, 0, 1); // 僅作為 render 參數，位置在 shader 內計算
+
+                const U = {
+                    uTime: { value: 0 },
+                    uPixelRatio: { value: 1 },
+                    uAspect: { value: 1 },
+                    uParallax: { value: new THREE.Vector2() },
+                    uWhite: { value: new THREE.Vector3(0.9, 0.95, 1.0) },
+                    uSky: { value: v3(C.sky) },
+                    uCyan: { value: v3(C.cyan) },
+                    uOrange: { value: v3(C.orange) },
+                };
+
+                /* 依 CSS 螢幕面積決定數量（約每 900px² 一顆），並設定上下限 */
+                function starCount() {
+                    const area = window.innerWidth * window.innerHeight;
+                    return Math.round(THREE.MathUtils.clamp(area / 900, 380, 1800));
+                }
+
+                let stars = null;
+                function build() {
+                    if (stars) { stars.geometry.dispose(); scene.remove(stars); }
+                    const n = starCount();
+                    const pos = [], rnd = [], tone = [], kind = [];
+                    for (let i = 0; i < n; i++) {
+                        const depth = Math.random();                 // 0 遠 → 1 近（影響大小、亮度與視差）
+                        pos.push(Math.random() * 2 - 1, Math.random() * 2 - 1, depth);
+                        rnd.push(Math.random());
+                        const t = Math.random();
+                        tone.push(t < 0.6 ? 0 : t < 0.84 ? 1 : t < 0.96 ? 2 : 3); // 0 白 1 淡藍 2 青 3 暖橘
+                        const k = Math.random();
+                        kind.push(k < 0.07 ? 2 : k < 0.22 ? 1 : 0);  // 2 亮星（帶光暈）1 閃爍星 0 一般星
+                    }
+                    const geo = new THREE.BufferGeometry();
+                    geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
+                    geo.setAttribute("aRandom", new THREE.Float32BufferAttribute(rnd, 1));
+                    geo.setAttribute("aTone", new THREE.Float32BufferAttribute(tone, 1));
+                    geo.setAttribute("aKind", new THREE.Float32BufferAttribute(kind, 1));
+                    stars = new THREE.Points(geo, material);
+                    stars.frustumCulled = false;
+                    scene.add(stars);
+                }
+
+                const material = new THREE.ShaderMaterial({
+                    transparent: true,
+                    depthWrite: false,
+                    depthTest: false,
+                    blending: THREE.AdditiveBlending,
+                    uniforms: U,
+                    vertexShader: `
+                        uniform float uTime, uPixelRatio, uAspect;
+                        uniform vec2 uParallax;
+                        uniform vec3 uWhite, uSky, uCyan, uOrange;
+                        attribute float aRandom, aTone, aKind;
+                        varying float vA, vKind, vGlow;
+                        varying vec3 vC;
+                        void main() {
+                            float depth = position.z;
+                            vec2 p = position.xy;
+                            // 極慢速橫向漂移 + 視差，超出畫面後循環回來
+                            p.x += uTime * (0.002 + depth * 0.006);
+                            p.y += uTime * 0.0012;
+                            p += uParallax * (0.01 + depth * 0.035);
+                            p = mod(p + 1.0, 2.0) - 1.0;
+
+                            float phase = aRandom * 80.0;
+                            float soft  = 0.72 + 0.28 * sin(uTime * (0.35 + aRandom * 0.7) + phase);
+                            float blink = 0.25 + 0.95 * pow(0.5 + 0.5 * sin(uTime * (0.45 + aRandom * 0.6) + phase), 5.0);
+                            float tw = aKind > 0.5 ? blink : soft;
+
+                            vec3 col = uWhite;
+                            if (aTone > 0.5 && aTone < 1.5) col = mix(uWhite, uSky, 0.4);
+                            else if (aTone > 1.5 && aTone < 2.5) col = mix(uWhite, uCyan, 0.55);
+                            else if (aTone > 2.5) col = mix(uWhite, uOrange, 0.5);
+                            vC = col;
+                            vKind = aKind;
+
+                            // CSS px 尺寸：一般星 1.2–2.6px、閃爍星 1.8–3.2px、亮星 2.6–4px（外加光暈範圍）
+                            float core = aKind > 1.5 ? 2.6 + aRandom * 1.4 : aKind > 0.5 ? 1.8 + aRandom * 1.4 : 1.2 + depth * 1.4;
+                            float glowScale = aKind > 1.5 ? 5.0 : 2.2;
+                            vGlow = glowScale;
+                            vA = (0.55 + depth * 0.45) * tw;
+
+                            gl_PointSize = core * glowScale * uPixelRatio;
+                            gl_Position = vec4(p, 0.0, 1.0);
+                        }
+                    `,
+                    fragmentShader: `
+                        varying float vA, vKind, vGlow;
+                        varying vec3 vC;
+                        void main() {
+                            vec2 uv = gl_PointCoord - 0.5;
+                            float d = length(uv) * 2.0 * vGlow;          // 以「星核半徑」為單位
+                            float core = smoothstep(1.0, 0.0, d);
+                            float halo = exp(-d * 0.9) * 0.35;
+                            float a = core + halo;
+                            if (vKind > 1.5) {
+                                // 亮星：細十字光芒
+                                float spike = exp(-abs(uv.x) * 90.0) * exp(-abs(uv.y) * 7.0) + exp(-abs(uv.y) * 90.0) * exp(-abs(uv.x) * 7.0);
+                                a += spike * 0.55 + exp(-d * 0.45) * 0.18;
+                            }
+                            a *= smoothstep(vGlow, vGlow * 0.8, d);          // 避免方形邊緣
+                            gl_FragColor = vec4(vC, clamp(a, 0.0, 1.0) * vA);
+                        }
+                    `,
+                });
+
+                function resize() {
+                    const w = window.innerWidth, h = window.innerHeight;
+                    const pr = Math.min(window.devicePixelRatio || 1, 2.5);
+                    renderer.setPixelRatio(pr);
+                    renderer.setSize(w, h, false);
+                    U.uPixelRatio.value = pr;
+                    U.uAspect.value = w / h;
+                }
+                resize();
+                build();
+                let lastCount = starCount();
+                window.addEventListener("resize", () => {
+                    resize();
+                    const c = starCount();
+                    if (Math.abs(c - lastCount) / lastCount > 0.25) { lastCount = c; build(); }
+                }, { passive: true });
+
+                /* 輕微視差（滑鼠與觸控） */
+                const p = { x: 0, y: 0 }, s = { x: 0, y: 0 };
+                let back = null;
+                const follow = (e) => {
+                    if (mqReduce.matches) return;
+                    p.x = (e.clientX / window.innerWidth) * 2 - 1;
+                    p.y = -((e.clientY / window.innerHeight) * 2 - 1);
+                    if (back) { clearTimeout(back); back = null; }
+                };
+                const release = (e) => {
+                    if (e.pointerType === "mouse") return;
+                    back = setTimeout(() => { p.x = 0; p.y = 0; }, 900);
+                };
+                window.addEventListener("pointermove", follow, { passive: true });
+                window.addEventListener("pointerdown", (e) => { if (e.pointerType !== "mouse") follow(e); }, { passive: true });
+                window.addEventListener("pointerup", release, { passive: true });
+                window.addEventListener("pointercancel", release, { passive: true });
+
+                /* 約 30fps 即足夠，省電 */
+                const clock = new THREE.Clock();
+                let t = 0, acc = 0;
+                function loop() {
+                    requestAnimationFrame(loop);
+                    const dt = Math.min(clock.getDelta(), 0.1);
+                    acc += dt;
+                    if (acc < 1 / 30) return;
+                    const step = acc; acc = 0;
+                    const reduce = mqReduce.matches;
+                    if (!reduce) t += step;
+                    U.uTime.value = t;
+                    const k = 1 - Math.exp(-step * 2);
+                    s.x += (p.x - s.x) * k;
+                    s.y += (p.y - s.y) * k;
+                    U.uParallax.value.set(-s.x, -s.y);
+                    renderer.render(scene, camera);
+                }
+                loop();
+            }
+
+            try {
+                initStarfield();
+            } catch (err) {
+                console.warn("WebGL 無法使用，星空改為靜態漸層。", err);
+            }
+
+            try {
+                initGlobe();
+            } catch (err) {
+                console.warn("WebGL 無法使用，隱藏地球動畫。", err);
+                if (wrap) wrap.classList.add("globe-fallback");
+            }
         </script>
     </body>
 </html>
