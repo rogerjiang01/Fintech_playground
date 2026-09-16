@@ -62,8 +62,12 @@
 
             html,
             body {
-                min-height: 100%;
-                min-height: 100dvh;
+                width: 100%;
+                height: 100%;
+                height: 100dvh;
+                margin: 0;
+                padding: 0;
+                overflow: hidden;
             }
 
             body {
@@ -74,8 +78,7 @@
                 flex-direction: column;
                 align-items: center;
                 justify-content: flex-start;
-                overflow-x: hidden;
-                overflow-y: auto;
+                overscroll-behavior: none;
             }
 
             /* Ambient Spatial Glow Background */
@@ -170,9 +173,16 @@
                 z-index: 0;
             }
 
-            @media (min-width: 521px) {
+            @media (min-width: 769px) {
+                html,
+                body {
+                    position: static;
+                    overflow-y: auto;
+                    overflow-x: hidden;
+                }
                 body.mockup-mode {
                     padding: 12px 0 20px;
+                    min-height: 100vh;
                 }
                 body.mockup-mode .device-container {
                     border-radius: 36px;
@@ -190,7 +200,18 @@
             }
 
             /* Native Full-Bleed Mobile Mode */
-            @media (max-width: 520px) {
+            @media (max-width: 768px) {
+                html,
+                body {
+                    position: fixed;
+                    inset: 0;
+                    width: 100%;
+                    height: 100%;
+                    height: 100dvh;
+                    overflow: hidden;
+                    overscroll-behavior: none;
+                    touch-action: pan-y;
+                }
                 .device-container {
                     max-width: 100% !important;
                     height: 100% !important;
@@ -207,7 +228,21 @@
                 }
             }
 
+            body:not(.mockup-mode) {
+                position: fixed;
+                inset: 0;
+                width: 100%;
+                height: 100%;
+                height: 100dvh;
+                overflow: hidden;
+                overscroll-behavior: none;
+                touch-action: pan-y;
+            }
             body:not(.mockup-mode) .device-container {
+                width: 100%;
+                max-width: 100%;
+                height: 100%;
+                height: 100dvh;
                 border-radius: 0;
                 border: none;
                 box-shadow: none;
@@ -226,6 +261,8 @@
                 scrollbar-width: none;
                 -webkit-overflow-scrolling: touch;
                 overscroll-behavior: contain;
+                overscroll-behavior-y: contain;
+                touch-action: pan-y;
             }
 
             /* Desktop Toolbar Dock */
@@ -470,9 +507,9 @@
             </header>
 
             <!-- App Screen Scrollable Body -->
-            <main class="flex-1 overflow-hidden relative z-10 flex flex-col">
+            <main class="flex-1 min-h-0 overflow-hidden relative z-10 flex flex-col">
                 <!-- ================= SCREEN 1: INTRO (HUD Bento Style) ================= -->
-                <section id="view-intro" class="p-3.5 sm:p-4 flex flex-col h-full flex-1 overflow-y-auto screen-scroll">
+                <section id="view-intro" class="p-3.5 sm:p-4 flex flex-col h-full flex-1 min-h-0 overflow-y-auto screen-scroll">
                     <!-- Top Hero Card -->
                     <div class="space-y-3 flex-1 flex flex-col justify-start">
                         <div class="glass-surface rounded-2xl p-3.5 sm:p-4 hud-bracket-box relative overflow-hidden">
@@ -521,7 +558,7 @@
                                 <span class="w-1.5 h-1.5 rounded-full bg-cyan-400 animate-pulse"></span>
                                 <span>探索市場</span>
                             </div>
-                            <div class="ticker-wrap flex-1">
+                            <div class="ticker-wrap flex-1 min-w-0">
                                 <div class="ticker-track text-[12.5px]">
                                     <span class="text-slate-300">
                                         微台指
@@ -587,7 +624,7 @@
                 </section>
 
                 <!-- ================= SCREEN 2: QUIZ (Spatial HUD Interactive) ================= -->
-                <section id="view-quiz" class="p-3 sm:p-4 flex flex-col h-full flex-1 overflow-y-auto screen-scroll hidden">
+                <section id="view-quiz" class="p-3 sm:p-4 flex flex-col h-full flex-1 min-h-0 overflow-y-auto screen-scroll hidden">
                     <div class="flex flex-col gap-3">
                         <!-- Telemetry Progress Strip -->
                         <div class="glass-card-subtle rounded-xl px-3 py-2 border border-cyan-500/20 flex-shrink-0">
@@ -665,7 +702,7 @@
                 </section>
 
                 <!-- ================= SCREEN 3: RESULT (Holographic Mission Accomplished) ================= -->
-                <section id="view-result" class="p-3.5 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll hidden">
+                <section id="view-result" class="p-3.5 sm:p-4 flex flex-col justify-between h-full flex-1 min-h-0 overflow-y-auto screen-scroll hidden">
                     <div class="space-y-2.5 pb-2">
                         <!-- Mission Stamp Banner -->
                         <div class="glass-card-subtle rounded-xl px-3 py-2.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
@@ -892,6 +929,7 @@
             let currentQ = 0;
 
             function showScreen(name) {
+                window.scrollTo(0, 0);
                 document.getElementById("view-intro").classList.add("hidden");
                 document.getElementById("view-quiz").classList.add("hidden");
                 document.getElementById("view-result").classList.add("hidden");
@@ -920,6 +958,11 @@
             function loadQuestion(idx) {
                 currentQ = idx;
                 const q = quizData[idx];
+
+                // Ensure quiz scroll is at top
+                const quizSection = document.getElementById("view-quiz");
+                if (quizSection) quizSection.scrollTop = 0;
+                window.scrollTo(0, 0);
 
                 // Telemetry updates
                 document.getElementById("stepText").textContent = `題目 ${idx + 1} / ${quizData.length}`;
@@ -1160,8 +1203,8 @@
                         document.body.classList.add("screenshot-mode");
                     }
 
-                    // On screens <= 520px or if noFrame is specified, disable mockup frame
-                    if (window.innerWidth <= 520 || noFrame) {
+                    // On screens <= 768px or if noFrame is specified, disable mockup frame
+                    if (window.innerWidth <= 768 || noFrame) {
                         document.body.classList.remove("mockup-mode");
                         const bar = document.getElementById("desktopBar");
                         if (bar) bar.style.display = "none";
