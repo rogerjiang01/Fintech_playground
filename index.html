@@ -62,8 +62,8 @@
 
             html,
             body {
-                height: 100%;
-                height: 100dvh;
+                min-height: 100%;
+                min-height: 100dvh;
             }
 
             body {
@@ -75,6 +75,7 @@
                 align-items: center;
                 justify-content: flex-start;
                 overflow-x: hidden;
+                overflow-y: auto;
             }
 
             /* Ambient Spatial Glow Background */
@@ -169,25 +170,62 @@
                 z-index: 0;
             }
 
-            @media (min-width: 768px) {
+            @media (min-width: 521px) {
                 body.mockup-mode {
                     padding: 12px 0 20px;
                 }
                 body.mockup-mode .device-container {
                     border-radius: 36px;
                     height: min(840px, calc(100dvh - 54px));
-                    min-height: 600px;
+                    min-height: 560px;
                     max-height: 860px;
                     border: 9px solid #0b1d33;
                     box-shadow:
                         0 0 50px -10px rgba(0, 162, 255, 0.35),
                         0 25px 60px rgba(0, 0, 0, 0.9);
                 }
+                body.mockup-mode .desktop-bar {
+                    display: flex;
+                }
             }
 
-            /* Custom Scrollbar */
+            /* Native Full-Bleed Mobile Mode */
+            @media (max-width: 520px) {
+                .device-container {
+                    max-width: 100% !important;
+                    height: 100% !important;
+                    height: 100dvh !important;
+                    border-radius: 0 !important;
+                    border: none !important;
+                    box-shadow: none !important;
+                }
+                .desktop-bar {
+                    display: none !important;
+                }
+                .safe-area-top {
+                    display: none !important;
+                }
+            }
+
+            body:not(.mockup-mode) .device-container {
+                border-radius: 0;
+                border: none;
+                box-shadow: none;
+            }
+            body:not(.mockup-mode) .desktop-bar,
+            body:not(.mockup-mode) .safe-area-top {
+                display: none;
+            }
+
+            /* Custom Scrollbar & Touch Scrolling */
             .screen-scroll::-webkit-scrollbar {
                 display: none;
+            }
+            .screen-scroll {
+                -ms-overflow-style: none;
+                scrollbar-width: none;
+                -webkit-overflow-scrolling: touch;
+                overscroll-behavior: contain;
             }
 
             /* Desktop Toolbar Dock */
@@ -208,38 +246,14 @@
                 backdrop-filter: blur(12px);
             }
 
-            @media (min-width: 768px) {
-                body.mockup-mode .desktop-bar {
-                    display: flex;
-                }
-            }
-
-            /* Clean Mobile / Screenshot mode without outer frames */
-            body.no-frame,
-            body:not(.mockup-mode) {
+            /* Dedicated Clean Mobile Screenshot Mode (ONLY active when ?screenshot=1 or #screenshot is passed) */
+            body.screenshot-mode {
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
                 padding: 0 !important;
                 margin: 0 !important;
-                overflow: hidden !important;
-                align-items: flex-start !important;
-                justify-content: flex-start !important;
             }
-            body.no-frame .desktop-bar,
-            body:not(.mockup-mode) .desktop-bar {
-                display: none !important;
-            }
-            body.no-frame .safe-area-top,
-            body:not(.mockup-mode) .safe-area-top {
-                display: none !important;
-            }
-
-            /* Dedicated Clean Mobile Screenshot Mode (390x844 standard iPhone) */
-            body.screenshot-mode,
-            body.no-frame {
-                align-items: flex-start !important;
-                justify-content: flex-start !important;
-            }
-            body.screenshot-mode .device-container,
-            body.no-frame .device-container {
+            body.screenshot-mode .device-container {
                 width: 390px !important;
                 max-width: 390px !important;
                 min-width: 390px !important;
@@ -250,6 +264,10 @@
                 border: none !important;
                 box-shadow: none !important;
                 margin: 0 !important;
+            }
+            body.screenshot-mode .desktop-bar,
+            body.screenshot-mode .safe-area-top {
+                display: none !important;
             }
 
             .toolbar-btn {
@@ -454,9 +472,9 @@
             <!-- App Screen Scrollable Body -->
             <main class="flex-1 overflow-hidden relative z-10 flex flex-col">
                 <!-- ================= SCREEN 1: INTRO (HUD Bento Style) ================= -->
-                <section id="view-intro" class="p-3.5 sm:p-4 flex flex-col justify-between h-full flex-1 overflow-y-auto screen-scroll">
+                <section id="view-intro" class="p-3.5 sm:p-4 flex flex-col h-full flex-1 overflow-y-auto screen-scroll">
                     <!-- Top Hero Card -->
-                    <div class="space-y-3">
+                    <div class="space-y-3 flex-1 flex flex-col justify-start">
                         <div class="glass-surface rounded-2xl p-3.5 sm:p-4 hud-bracket-box relative overflow-hidden">
                             <!-- Ambient Corner Beam -->
                             <div class="absolute -right-8 -top-8 w-28 h-28 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -560,7 +578,7 @@
                     </div>
 
                     <!-- Start CTA Button Section -->
-                    <div class="mt-4 mb-1 space-y-2">
+                    <div class="mt-4 mb-2 space-y-2 flex-shrink-0">
                         <button onclick="startGame()" class="start-cta-btn w-full h-[50px] rounded-xl text-white font-bold text-[16.5px] tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 border border-cyan-300 cursor-pointer">
                             <span>開始挑戰</span>
                         </button>
@@ -1136,10 +1154,15 @@
                         }
                     }
 
-                    // On screens <= 768px or if noFrame is specified, disable mockup frame
-                    if (window.innerWidth <= 768 || noFrame) {
+                    // Check if explicit screenshot mode is requested via URL
+                    const isScreenshot = searchParams.get("screenshot") === "1" || rawHash.includes("screenshot");
+                    if (isScreenshot) {
+                        document.body.classList.add("screenshot-mode");
+                    }
+
+                    // On screens <= 520px or if noFrame is specified, disable mockup frame
+                    if (window.innerWidth <= 520 || noFrame) {
                         document.body.classList.remove("mockup-mode");
-                        document.body.classList.add("no-frame");
                         const bar = document.getElementById("desktopBar");
                         if (bar) bar.style.display = "none";
                     } else {
