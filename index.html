@@ -38,11 +38,13 @@
         <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@500;700&family=Noto+Sans+TC:wght@400;500;600;700;900&family=Orbitron:wght@500;700;800;900&display=swap" rel="stylesheet" />
 
         <!-- Preload Question Images for Instant Display -->
+        <link rel="preload" as="image" href="background.jpg" />
         <link rel="preload" as="image" href="q1_ai_chip.jpg" />
         <link rel="preload" as="image" href="q2_copper.jpg" />
         <link rel="preload" as="image" href="q3_microsoft.jpg" />
         <link rel="preload" as="image" href="q4_bond.jpg" />
         <link rel="preload" as="image" href="q5_vix.jpg" />
+        <link rel="preload" as="image" href="q6_itrader_bg.jpg" />
         <link rel="preload" as="image" href="iTRADER_logo.svg" />
 
         <style>
@@ -52,6 +54,10 @@
                 padding: 0;
                 -webkit-tap-highlight-color: transparent;
                 user-select: none;
+            }
+
+            .hidden {
+                display: none !important;
             }
 
             html,
@@ -77,7 +83,10 @@
                 inset: 0;
                 pointer-events: none;
                 z-index: 0;
-                background: radial-gradient(circle at 20% 15%, rgba(0, 110, 255, 0.18) 0%, transparent 45%), radial-gradient(circle at 80% 85%, rgba(0, 229, 255, 0.12) 0%, transparent 50%), radial-gradient(circle at 50% 50%, rgba(255, 119, 0, 0.06) 0%, transparent 60%);
+                background-image: radial-gradient(circle at 20% 15%, rgba(0, 110, 255, 0.22) 0%, transparent 45%), radial-gradient(circle at 80% 85%, rgba(0, 229, 255, 0.16) 0%, transparent 50%), linear-gradient(rgba(2, 6, 15, 0.78), rgba(2, 6, 15, 0.88)), url("background.jpg");
+                background-size: cover;
+                background-position: center center;
+                background-repeat: no-repeat;
             }
 
             /* Subtle Cyber HUD Grid Overlay */
@@ -147,7 +156,20 @@
                 transition: all 0.3s ease;
             }
 
-            @media (min-width: 520px) {
+            /* App Background Layer for Phone Container */
+            .app-bg-layer {
+                position: absolute;
+                inset: 0;
+                background-image: url("background.jpg");
+                background-size: cover;
+                background-position: center top;
+                background-repeat: no-repeat;
+                opacity: 0.65;
+                pointer-events: none;
+                z-index: 0;
+            }
+
+            @media (min-width: 768px) {
                 body.mockup-mode {
                     padding: 12px 0 20px;
                 }
@@ -170,11 +192,11 @@
 
             /* Desktop Toolbar Dock */
             .desktop-bar {
+                display: none;
                 width: 100%;
                 max-width: 900px;
                 z-index: 50;
                 margin-top: 12px;
-                display: flex;
                 flex-wrap: wrap;
                 align-items: center;
                 justify-content: center;
@@ -184,6 +206,50 @@
                 border: 1px solid rgba(0, 229, 255, 0.3);
                 border-radius: 12px;
                 backdrop-filter: blur(12px);
+            }
+
+            @media (min-width: 768px) {
+                body.mockup-mode .desktop-bar {
+                    display: flex;
+                }
+            }
+
+            /* Clean Mobile / Screenshot mode without outer frames */
+            body.no-frame,
+            body:not(.mockup-mode) {
+                padding: 0 !important;
+                margin: 0 !important;
+                overflow: hidden !important;
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+            }
+            body.no-frame .desktop-bar,
+            body:not(.mockup-mode) .desktop-bar {
+                display: none !important;
+            }
+            body.no-frame .safe-area-top,
+            body:not(.mockup-mode) .safe-area-top {
+                display: none !important;
+            }
+
+            /* Dedicated Clean Mobile Screenshot Mode (390x844 standard iPhone) */
+            body.screenshot-mode,
+            body.no-frame {
+                align-items: flex-start !important;
+                justify-content: flex-start !important;
+            }
+            body.screenshot-mode .device-container,
+            body.no-frame .device-container {
+                width: 390px !important;
+                max-width: 390px !important;
+                min-width: 390px !important;
+                height: 844px !important;
+                max-height: 844px !important;
+                min-height: 844px !important;
+                border-radius: 0 !important;
+                border: none !important;
+                box-shadow: none !important;
+                margin: 0 !important;
             }
 
             .toolbar-btn {
@@ -338,7 +404,7 @@
             }
         </style>
     </head>
-    <body class="mockup-mode">
+    <body>
         <!-- Ambient Visual FX -->
         <div class="ambient-mesh"></div>
         <div class="hud-grid-overlay"></div>
@@ -359,8 +425,11 @@
 
         <!-- Phone Screen Device Container -->
         <div class="device-container" id="deviceContainer">
+            <!-- App Background Layer (background.jpg) -->
+            <div class="app-bg-layer" id="appBgLayer"></div>
+
             <!-- Pure Safe Area Top Space (Visible only in desktop mockup frame) -->
-            <div class="w-full h-0 sm:h-6 flex-shrink-0 bg-[#040f1d] border-b border-cyan-950/60 hidden sm:block"></div>
+            <div class="safe-area-top w-full h-0 sm:h-6 flex-shrink-0 bg-[#040f1d] border-b border-cyan-950/60 hidden sm:block relative z-20"></div>
 
             <!-- HUD Header Bar -->
             <header class="h-12 px-3.5 sm:px-4 bg-[#061427]/90 border-b border-cyan-500/30 flex items-center justify-between flex-shrink-0 backdrop-blur-md relative z-20">
@@ -495,7 +564,7 @@
                         <button onclick="startGame()" class="start-cta-btn w-full h-[50px] rounded-xl text-white font-bold text-[16.5px] tracking-wider flex items-center justify-center gap-2 shadow-lg shadow-cyan-500/30 border border-cyan-300 cursor-pointer">
                             <span>開始挑戰</span>
                         </button>
-                        <p class="text-[12px] text-center text-slate-400 font-mono">* 完成 6 道挑戰即可獲得攤位闖關集章</p>
+                        <p class="text-[12px] text-center text-slate-400 font-mono">* 完成 6 道挑戰與問卷即可獲得攤位好禮</p>
                     </div>
                 </section>
 
@@ -525,7 +594,7 @@
                                 <img id="qImg" src="" alt="情境圖" class="w-full h-full object-cover object-center hidden" onload="onImgLoaded()" onerror="onImgError()" />
 
                                 <!-- Q6 Custom Background Layer (35% opacity, deep blue underlay) -->
-                                <img id="q6BgImg" src="q6_itrader_bg.jpg" alt="iTRADER 背景" class="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none hidden transition-opacity duration-300" style="opacity: 0.35" onerror="this.style.visibility = 'hidden'" onload="this.style.visibility = 'visible'" />
+                                <img id="q6BgImg" src="q6_itrader_bg.jpg" alt="iTRADER 背景" class="absolute inset-0 w-full h-full object-cover opacity-[0.35] pointer-events-none hidden transition-opacity duration-300" style="opacity: 0.35" />
 
                                 <!-- Q6 Icon Layout Mode -->
                                 <div id="qIconContainer" class="relative z-10 flex flex-col items-center justify-center gap-2 p-3 text-center hidden">
@@ -584,7 +653,7 @@
                         <div class="glass-card-subtle rounded-xl px-3 py-2.5 border border-emerald-500/40 bg-emerald-950/20 text-emerald-400 flex items-center justify-between">
                             <div class="flex items-center gap-2">
                                 <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
-                                <span class="text-[13.5px] font-bold">攤位闖關集章認證完畢</span>
+                                <span class="text-[13.5px] font-bold">攤位闖關認證完畢</span>
                             </div>
                             <span class="text-[12px] tracking-widest text-emerald-300 font-bold">[已認證]</span>
                         </div>
@@ -855,7 +924,10 @@
                     imgElem.classList.add("hidden");
                     fallbackBox.classList.add("hidden");
                     iconBox.classList.remove("hidden");
-                    if (q6BgImg) q6BgImg.classList.remove("hidden");
+                    if (q6BgImg) {
+                        q6BgImg.style.visibility = "visible";
+                        q6BgImg.classList.remove("hidden");
+                    }
                     if (qImgFrame) qImgFrame.style.backgroundColor = "#081d3d";
                 } else {
                     iconBox.classList.add("hidden");
@@ -956,11 +1028,13 @@
             }
 
             function onImgLoaded() {
+                if (quizData[currentQ] && quizData[currentQ].isIcon) return;
                 document.getElementById("qFallback").classList.add("hidden");
                 document.getElementById("qImg").classList.remove("hidden");
             }
 
             function onImgError() {
+                if (quizData[currentQ] && quizData[currentQ].isIcon) return;
                 document.getElementById("qImg").classList.add("hidden");
                 document.getElementById("qFallback").classList.remove("hidden");
             }
@@ -1002,6 +1076,8 @@
                         preloadImg.src = q.imageFile;
                     }
                 });
+                const bg = new Image();
+                bg.src = "background.jpg";
                 const q6Bg = new Image();
                 q6Bg.src = "q6_itrader_bg.jpg";
             }
@@ -1032,6 +1108,74 @@
             });
 
             resetIdleTimer();
+
+            // ================= URL 參數導覽與手機滿版支援 =================
+            (function initRouteFromUrl() {
+                try {
+                    // Extract both search parameters and hash parameters
+                    const searchParams = new URLSearchParams(window.location.search);
+                    const rawHash = (window.location.hash || "").replace(/^#/, "");
+                    const hashParams = new URLSearchParams(rawHash.includes("=") ? rawHash : "");
+
+                    let scr = searchParams.get("screen") || hashParams.get("screen");
+                    let qIdx = searchParams.get("q") || hashParams.get("q");
+                    let ans = searchParams.get("ans") || hashParams.get("ans");
+                    let noFrame = searchParams.get("noframe") || hashParams.get("noframe") || rawHash.includes("noframe");
+
+                    // Direct hash shortcuts: #intro, #result, #q0, #q1, #q0-ans, #q0-wrong
+                    if (!scr && (qIdx === null || qIdx === undefined)) {
+                        if (rawHash === "intro" || rawHash === "result") {
+                            scr = rawHash;
+                        } else if (rawHash.startsWith("q")) {
+                            const match = rawHash.match(/^q(\d+)(?:-(ans|correct|wrong))?/);
+                            if (match) {
+                                qIdx = match[1];
+                                if (match[2] === "ans" || match[2] === "correct") ans = "correct";
+                                if (match[2] === "wrong") ans = "wrong";
+                            }
+                        }
+                    }
+
+                    // On screens <= 768px or if noFrame is specified, disable mockup frame
+                    if (window.innerWidth <= 768 || noFrame) {
+                        document.body.classList.remove("mockup-mode");
+                        document.body.classList.add("no-frame");
+                        const bar = document.getElementById("desktopBar");
+                        if (bar) bar.style.display = "none";
+                    } else {
+                        document.body.classList.add("mockup-mode");
+                    }
+
+                    if (scr === "intro") {
+                        showScreen("intro");
+                    } else if (scr === "result") {
+                        showScreen("result");
+                        const statAcc = document.getElementById("statAccuracy");
+                        const statNodes = document.getElementById("statNodes");
+                        if (statAcc) statAcc.textContent = "100%";
+                        if (statNodes) statNodes.textContent = "6 / 6";
+                    } else if (qIdx !== null && !isNaN(parseInt(qIdx, 10))) {
+                        const idx = Math.max(0, Math.min(quizData.length - 1, parseInt(qIdx, 10)));
+                        jumpQuestion(idx);
+
+                        if (ans === "correct" || ans === "wrong") {
+                            setTimeout(() => {
+                                const q = quizData[idx];
+                                if (!q) return;
+                                const isCorrect = ans === "correct";
+                                const targetIdx = q.options.findIndex((o) => (isCorrect ? o.correct : !o.correct));
+                                const targetOpt = q.options[targetIdx];
+                                const cards = document.querySelectorAll(".option-card");
+                                if (cards[targetIdx] && targetOpt) {
+                                    selectOpt(cards[targetIdx], targetOpt, q);
+                                }
+                            }, 80);
+                        }
+                    }
+                } catch (err) {
+                    console.error("URL routing error:", err);
+                }
+            })();
         </script>
     </body>
 </html>
