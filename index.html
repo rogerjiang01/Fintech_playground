@@ -1349,16 +1349,16 @@
                 const COLOR_UNIFORMS = "uniform vec3 uBlue, uSky, uCyan, uOrange;";
                 const additive = { transparent: true, depthWrite: false, blending: THREE.AdditiveBlending };
 
-                // 群組階層：root（縮放）→ parallax（滑鼠視差）→ pitch（觸控上下翻轉）→ tilt（地軸傾角）→ spin（自轉／左右拖曳）
+                // 群組階層：root（縮放）→ parallax（滑鼠視差）→ orient（觸控拖曳姿態，以螢幕座標旋轉）→ tilt（地軸傾角）→ spin（自轉）
                 const root = new THREE.Group();
                 const parallax = new THREE.Group();
-                const pitch = new THREE.Group();
+                const orient = new THREE.Group();
                 const tilt = new THREE.Group();
                 const spin = new THREE.Group();
                 tilt.rotation.z = THREE.MathUtils.degToRad(-16);
                 root.add(parallax);
-                parallax.add(pitch);
-                pitch.add(tilt);
+                parallax.add(orient);
+                orient.add(tilt);
                 tilt.add(spin);
                 scene.add(root);
 
@@ -1667,17 +1667,42 @@
                     pointer.y = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1.5, 1.5);
                 }, { passive: true });
 
-                /* ───── 觸控：在地球區域拖曳旋轉 + 慣性 ───── */
+                /* ───── 觸控：在地球區域拖曳旋轉 + 慣性 ─────
+                   拖曳一律以「螢幕方向」旋轉（右滑＝往右轉、下滑＝往下翻），不受地球目前姿態影響。
+                   地軸自轉量會即時轉交給 spin，orient 只保留「地軸偏離正常角度」的部分，放開後平順回正。 */
                 const BASE_SPIN = () => (mqReduce.matches ? 0.03 : 0.075); // 自旋速度（rad/s）
                 const MAX_VEL = 7;          // 甩動速度上限（rad/s）
                 const DRAG_THRESHOLD = 6;   // 移動超過 6px 才算拖曳，單純點一下不影響地球
-                const SPIN_SETTLE = 0.75;   // 左右慣性回到自旋的時間常數（秒），約 2 秒內平順接回
-                const PITCH_DAMP = 1.8;     // 上下慣性衰減
-                const PITCH_RETURN = 0.9;   // 上下角度回正速度
+                const SETTLE_TIME = 7.25;   // 放開後回到原本自旋速度所需時間（秒）
+                const AXIS_RETURN = 0.9;    // 地軸回正速度
 
-                let spinVel = BASE_SPIN();  // 目前左右轉速
-                let pitchVel = 0;           // 目前上下轉速
+                const AXIS = new THREE.Vector3(0, 1, 0).applyQuaternion(tilt.quaternion); // 地球自轉軸（orient 座標）
+                const X_AXIS = new THREE.Vector3(1, 0, 0), Y_AXIS = new THREE.Vector3(0, 1, 0);
+                const releaseOmega = new THREE.Vector3();   // 放開瞬間的角速度（螢幕座標，rad/s）
+                const omega = new THREE.Vector3();          // 目前慣性角速度
+                let releaseAt = -Infinity;                  // 放開的時間點（elapsed 秒）
+                const tmpV = new THREE.Vector3();
+                const tmpQ = new THREE.Quaternion(), twistQ = new THREE.Quaternion(), idQ = new THREE.Quaternion();
                 const drag = { id: null, active: false, startX: 0, startY: 0, lastX: 0, lastY: 0, samples: [] };
+
+                // 以世界（螢幕）座標軸旋轉 orient
+                function rotateScreen(axis, angle) {
+                    if (!angle) return;
+                    tmpQ.setFromAxisAngle(axis, angle);
+                    orient.quaternion.premultiply(tmpQ);
+                }
+
+                // swing-twist 分解：把繞地軸的旋轉轉交給 spin，orient 只留下地軸的偏擺
+                function transferTwist() {
+                    const q = orient.quaternion;
+                    const proj = q.x * AXIS.x + q.y * AXIS.y + q.z * AXIS.z;
+                    const len = Math.hypot(proj, q.w);
+                    if (len < 1e-6) return; // 翻轉恰為 180° 的奇異點，下一幀再處理
+                    twistQ.set(AXIS.x * proj / len, AXIS.y * proj / len, AXIS.z * proj / len, q.w / len);
+                    const angle = 2 * Math.atan2(proj, q.w);
+                    q.multiply(twistQ.invert()).normalize();  // swing = q · twist⁻¹
+                    spin.rotation.y += angle;                  // orient·tilt = swing·tilt·R_y(angle)
+                }
 
                 // 使用事件本身的時間戳記（而非處理時間），主執行緒忙碌時速度估算依然準確
                 function sample(e) {
@@ -1704,15 +1729,14 @@
                         drag.active = true;             // 開始拖曳：暫停自旋與慣性
                         drag.lastX = e.clientX;
                         drag.lastY = e.clientY;
-                        spinVel = 0;
-                        pitchVel = 0;
+                        omega.set(0, 0, 0);
                     }
                     const dx = e.clientX - drag.lastX;
                     const dy = e.clientY - drag.lastY;
                     drag.lastX = e.clientX;
                     drag.lastY = e.clientY;
-                    spin.rotation.y += dx * radPerPx;   // 右滑 → 地球正面往右轉
-                    pitch.rotation.x += dy * radPerPx;  // 下滑 → 北半球往前翻
+                    rotateScreen(Y_AXIS, dx * radPerPx);  // 右滑 → 正面往右轉
+                    rotateScreen(X_AXIS, dy * radPerPx);  // 下滑 → 正面往下翻
                     sample(e);
                 });
 
@@ -1722,14 +1746,16 @@
                         const now = e.timeStamp;
                         const s0 = drag.samples[0], s1 = drag.samples[drag.samples.length - 1];
                         const dtMs = s1 && s0 ? s1.t - s0.t : 0;
+                        releaseOmega.set(0, 0, 0);
                         // 放開前 80ms 內還在移動才給慣性；停住再放開 → 無慣性
                         if (s0 && s1 && dtMs > 8 && now - s1.t < 80) {
-                            spinVel = THREE.MathUtils.clamp(((s1.x - s0.x) / dtMs) * 1000 * radPerPx, -MAX_VEL, MAX_VEL);
-                            pitchVel = THREE.MathUtils.clamp(((s1.y - s0.y) / dtMs) * 1000 * radPerPx, -MAX_VEL, MAX_VEL);
-                        } else {
-                            spinVel = 0;
-                            pitchVel = 0;
+                            releaseOmega.set(
+                                ((s1.y - s0.y) / dtMs) * 1000 * radPerPx,  // 繞螢幕 X 軸
+                                ((s1.x - s0.x) / dtMs) * 1000 * radPerPx,  // 繞螢幕 Y 軸
+                                0
+                            ).clampLength(0, MAX_VEL);
                         }
+                        releaseAt = elapsed;
                     }
                     try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
                     drag.id = null;
@@ -1761,21 +1787,29 @@
                     U.uReveal.value = ease;
 
                     if (!drag.active) {
-                        // 左右：慣性速度以指數方式平順收斂回自旋速度（反向甩動也會先減速再轉回原方向）
-                        spinVel += (BASE_SPIN() - spinVel) * (1 - Math.exp(-dt / SPIN_SETTLE));
-                        spin.rotation.y += spinVel * dt;
+                        // 放開後 SETTLE_TIME 秒內：慣性以 ease-out 曲線 (1-u)³ 衰減，自旋同步由 0 補回。
+                        // 兩者相加 = 自旋 + (甩動速度 − 自旋) × (1-u)³，反向甩動會先減速、平順轉回原方向，約 7.25 秒完全接回。
+                        const u = THREE.MathUtils.clamp((elapsed - releaseAt) / SETTLE_TIME, 0, 1);
+                        const f = Math.pow(1 - u, 3);
+                        omega.copy(releaseOmega).multiplyScalar(f);
 
-                        // 上下：慣性衰減後，平順轉回最接近的正常角度（不限制翻轉幅度）
-                        pitchVel *= Math.exp(-dt * PITCH_DAMP);
-                        pitch.rotation.x += pitchVel * dt;
-                        const home = Math.round(pitch.rotation.x / (Math.PI * 2)) * Math.PI * 2;
-                        const settle = 1 - THREE.MathUtils.clamp(Math.abs(pitchVel) / 1.5, 0, 1); // 還在快速翻轉時先不拉回
-                        pitch.rotation.x += (home - pitch.rotation.x) * (1 - Math.exp(-dt * PITCH_RETURN)) * settle;
-                        if (Math.abs(pitchVel) < 0.001 && Math.abs(home - pitch.rotation.x) < 0.0005) {
-                            pitch.rotation.x = 0;
-                            pitchVel = 0;
+                        // 慣性（螢幕座標）
+                        const w = omega.length();
+                        if (w > 1e-5) {
+                            tmpQ.setFromAxisAngle(tmpV.copy(omega).divideScalar(w), w * dt);
+                            orient.quaternion.premultiply(tmpQ);
                         }
+                        // 自旋（地軸）
+                        spin.rotation.y += BASE_SPIN() * (1 - f) * dt;
+
+                        // 地軸回正：仍在快速翻轉時先不拉回，慢下來後平順轉回正常角度
+                        const perp = tmpV.copy(omega).addScaledVector(AXIS, -omega.dot(AXIS)).length();
+                        const settle = 1 - THREE.MathUtils.clamp(perp / 1.5, 0, 1);
+                        if (orient.quaternion.w < 0) orient.quaternion.set(-orient.quaternion.x, -orient.quaternion.y, -orient.quaternion.z, -orient.quaternion.w);
+                        orient.quaternion.slerp(idQ, (1 - Math.exp(-dt * AXIS_RETURN)) * settle);
                     }
+                    transferTwist();
+                    spin.rotation.y %= Math.PI * 2;
                     orbitA.rotation.y += dt * 0.04;
                     orbitB.rotation.y -= dt * 0.025;
 
