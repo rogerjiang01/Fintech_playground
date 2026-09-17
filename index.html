@@ -1759,7 +1759,7 @@
                 const BASE_SPIN = () => (mqReduce.matches ? 0.03 : 0.075); // 自旋速度（rad/s）
                 const DRAG_THRESHOLD = 6; // 移動超過 6px 才算拖曳，單純點一下不影響地球
                 const FLICK_MAX_MS = 200; // 接觸時間門檻：短於此為「甩」，長於此為「抓」
-                const SETTLE_BASE = 7.25; // 一般甩動回到自旋所需時間（秒）
+                const SETTLE_BASE = 5.25; // 一般甩動回到自旋所需時間（秒）
                 const SETTLE_REF_SPEED = 7; // 超過此速度（rad/s ≈ 每秒 1.1 圈）後，回穩時間隨速度拉長
                 const SETTLE_GROWTH = 0.6; // 拉長幅度（對數成長：1 圈/秒 ≈ 7.25 秒、2 圈/秒上限 ≈ 9.8 秒）
                 const GRAB_BRAKE = 14; // 「抓」時煞停的速度
