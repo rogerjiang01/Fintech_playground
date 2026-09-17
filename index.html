@@ -1310,19 +1310,34 @@
             const v3 = (c) => new THREE.Vector3(c.r, c.g, c.b);
 
             /* 3D value noise：程式化產生抽象大陸 */
-            function hash(x, y, z) { const h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453; return h - Math.floor(h); }
-            function noise3(x, y, z) {
-                const xi = Math.floor(x), yi = Math.floor(y), zi = Math.floor(z);
-                const xf = x - xi, yf = y - yi, zf = z - zi;
-                const u = xf * xf * (3 - 2 * xf), v = yf * yf * (3 - 2 * yf), w = zf * zf * (3 - 2 * zf);
-                const L = (a, b, t) => a + (b - a) * t;
-                return L(
-                    L(L(hash(xi, yi, zi), hash(xi + 1, yi, zi), u), L(hash(xi, yi + 1, zi), hash(xi + 1, yi + 1, zi), u), v),
-                    L(L(hash(xi, yi, zi + 1), hash(xi + 1, yi, zi + 1), u), L(hash(xi, yi + 1, zi + 1), hash(xi + 1, yi + 1, zi + 1), u), v),
-                    w
-                );
+            function hash(x, y, z) {
+                const h = Math.sin(x * 127.1 + y * 311.7 + z * 74.7) * 43758.5453;
+                return h - Math.floor(h);
             }
-            function fbm(x, y, z) { let s = 0, a = 0.5, f = 1; for (let i = 0; i < 4; i++) { s += a * noise3(x * f, y * f, z * f); f *= 2; a *= 0.5; } return s; }
+            function noise3(x, y, z) {
+                const xi = Math.floor(x),
+                    yi = Math.floor(y),
+                    zi = Math.floor(z);
+                const xf = x - xi,
+                    yf = y - yi,
+                    zf = z - zi;
+                const u = xf * xf * (3 - 2 * xf),
+                    v = yf * yf * (3 - 2 * yf),
+                    w = zf * zf * (3 - 2 * zf);
+                const L = (a, b, t) => a + (b - a) * t;
+                return L(L(L(hash(xi, yi, zi), hash(xi + 1, yi, zi), u), L(hash(xi, yi + 1, zi), hash(xi + 1, yi + 1, zi), u), v), L(L(hash(xi, yi, zi + 1), hash(xi + 1, yi, zi + 1), u), L(hash(xi, yi + 1, zi + 1), hash(xi + 1, yi + 1, zi + 1), u), v), w);
+            }
+            function fbm(x, y, z) {
+                let s = 0,
+                    a = 0.5,
+                    f = 1;
+                for (let i = 0; i < 4; i++) {
+                    s += a * noise3(x * f, y * f, z * f);
+                    f *= 2;
+                    a *= 0.5;
+                }
+                return s;
+            }
 
             const FACING_GLSL = `
                 float facing(vec3 p, vec4 mv) {
@@ -1369,12 +1384,16 @@
                 /* 1. 地球粒子 */
                 const N = 11000;
                 const golden = Math.PI * (3 - Math.sqrt(5));
-                const gPos = [], gRnd = [], gLand = [], landPts = [];
+                const gPos = [],
+                    gRnd = [],
+                    gLand = [],
+                    landPts = [];
                 for (let i = 0; i < N; i++) {
                     const y = 1 - (i / (N - 1)) * 2;
                     const r = Math.sqrt(1 - y * y);
                     const th = golden * i;
-                    const x = Math.cos(th) * r, z = Math.sin(th) * r;
+                    const x = Math.cos(th) * r,
+                        z = Math.sin(th) * r;
                     const isLand = fbm(x * 1.8 + 11.3, y * 1.8 + 3.7, z * 1.8 + 7.1) > 0.5;
                     if (!isLand && Math.random() > 0.26) continue;
                     gPos.push(x, y, z);
@@ -1386,10 +1405,13 @@
                 globeGeo.setAttribute("position", new THREE.Float32BufferAttribute(gPos, 3));
                 globeGeo.setAttribute("aRandom", new THREE.Float32BufferAttribute(gRnd, 1));
                 globeGeo.setAttribute("aLand", new THREE.Float32BufferAttribute(gLand, 1));
-                spin.add(new THREE.Points(globeGeo, new THREE.ShaderMaterial({
-                    ...additive,
-                    uniforms: { ...U, uSize: { value: 3.2 } },
-                    vertexShader: `
+                spin.add(
+                    new THREE.Points(
+                        globeGeo,
+                        new THREE.ShaderMaterial({
+                            ...additive,
+                            uniforms: { ...U, uSize: { value: 3.2 } },
+                            vertexShader: `
                         uniform float uTime, uPixelRatio, uReveal, uSize; ${COLOR_UNIFORMS}
                         attribute float aRandom, aLand;
                         varying vec3 vColor; varying float vAlpha;
@@ -1414,37 +1436,48 @@
                             gl_Position = projectionMatrix * mv;
                         }
                     `,
-                    fragmentShader: `
+                            fragmentShader: `
                         varying vec3 vColor; varying float vAlpha;
                         void main() {
                             float d = length(gl_PointCoord - 0.5);
                             gl_FragColor = vec4(vColor, smoothstep(0.5, 0.05, d) * vAlpha);
                         }
                     `,
-                })));
+                        }),
+                    ),
+                );
 
                 /* 2. 經緯網格 */
-                const gridPos = [], SEG = 128;
+                const gridPos = [],
+                    SEG = 128;
                 for (let lat = -75; lat <= 75; lat += 15) {
-                    const phi = THREE.MathUtils.degToRad(lat), yy = Math.sin(phi), rr = Math.cos(phi);
+                    const phi = THREE.MathUtils.degToRad(lat),
+                        yy = Math.sin(phi),
+                        rr = Math.cos(phi);
                     for (let s = 0; s < SEG; s++) {
-                        const a0 = (s / SEG) * Math.PI * 2, a1 = ((s + 1) / SEG) * Math.PI * 2;
+                        const a0 = (s / SEG) * Math.PI * 2,
+                            a1 = ((s + 1) / SEG) * Math.PI * 2;
                         gridPos.push(Math.cos(a0) * rr, yy, Math.sin(a0) * rr, Math.cos(a1) * rr, yy, Math.sin(a1) * rr);
                     }
                 }
                 for (let lon = 0; lon < 180; lon += 15) {
-                    const th = THREE.MathUtils.degToRad(lon), c = Math.cos(th), sn = Math.sin(th);
+                    const th = THREE.MathUtils.degToRad(lon),
+                        c = Math.cos(th),
+                        sn = Math.sin(th);
                     for (let s = 0; s < SEG; s++) {
-                        const t0 = (s / SEG) * Math.PI * 2, t1 = ((s + 1) / SEG) * Math.PI * 2;
+                        const t0 = (s / SEG) * Math.PI * 2,
+                            t1 = ((s + 1) / SEG) * Math.PI * 2;
                         gridPos.push(Math.cos(t0) * c, Math.sin(t0), Math.cos(t0) * sn, Math.cos(t1) * c, Math.sin(t1), Math.cos(t1) * sn);
                     }
                 }
                 const gridGeo = new THREE.BufferGeometry();
                 gridGeo.setAttribute("position", new THREE.Float32BufferAttribute(gridPos, 3));
-                const grid = new THREE.LineSegments(gridGeo, new THREE.ShaderMaterial({
-                    ...additive,
-                    uniforms: { ...U },
-                    vertexShader: `
+                const grid = new THREE.LineSegments(
+                    gridGeo,
+                    new THREE.ShaderMaterial({
+                        ...additive,
+                        uniforms: { ...U },
+                        vertexShader: `
                         varying float vFront; varying float vY;
                         ${FACING_GLSL}
                         void main() {
@@ -1454,7 +1487,7 @@
                             gl_Position = projectionMatrix * mv;
                         }
                     `,
-                    fragmentShader: `
+                        fragmentShader: `
                         uniform float uReveal; ${COLOR_UNIFORMS}
                         varying float vFront; varying float vY;
                         void main() {
@@ -1462,23 +1495,37 @@
                             gl_FragColor = vec4(col, mix(0.012, 0.14, vFront) * uReveal);
                         }
                     `,
-                }));
+                    }),
+                );
                 grid.scale.setScalar(1.004);
                 spin.add(grid);
 
                 /* 3. 市場連線弧線 + 節點脈衝（青 → 橘，呼應 HUD 角標與進度條） */
-                const ARC_COUNT = 18, ARC_SEG = 72;
-                const arcPos = [], arcT = [], arcSeed = [], nodePos = [], nodeSeed = [], nodeHue = [];
+                const ARC_COUNT = 18,
+                    ARC_SEG = 72;
+                const arcPos = [],
+                    arcT = [],
+                    arcSeed = [],
+                    nodePos = [],
+                    nodeSeed = [],
+                    nodeHue = [];
                 const slerp = (a, b, t, ang) => {
                     const s = Math.sin(ang);
-                    return a.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(b.clone().multiplyScalar(Math.sin(t * ang) / s));
+                    return a
+                        .clone()
+                        .multiplyScalar(Math.sin((1 - t) * ang) / s)
+                        .add(b.clone().multiplyScalar(Math.sin(t * ang) / s));
                 };
                 const pick = () => (landPts.length > 50 ? landPts[(Math.random() * landPts.length) | 0] : new THREE.Vector3().randomDirection());
-                let made = 0, guard = 0;
+                let made = 0,
+                    guard = 0;
                 while (made < ARC_COUNT && guard++ < 2000) {
-                    const a = pick(), b = pick(), ang = a.angleTo(b);
+                    const a = pick(),
+                        b = pick(),
+                        ang = a.angleTo(b);
                     if (ang < 0.45 || ang > 2.1) continue;
-                    const h = 0.06 + ang * 0.2, seed = Math.random();
+                    const h = 0.06 + ang * 0.2,
+                        seed = Math.random();
                     let prev = a.clone();
                     for (let s = 1; s <= ARC_SEG; s++) {
                         const t = s / ARC_SEG;
@@ -1497,10 +1544,13 @@
                 arcGeo.setAttribute("position", new THREE.Float32BufferAttribute(arcPos, 3));
                 arcGeo.setAttribute("aT", new THREE.Float32BufferAttribute(arcT, 1));
                 arcGeo.setAttribute("aSeed", new THREE.Float32BufferAttribute(arcSeed, 1));
-                spin.add(new THREE.LineSegments(arcGeo, new THREE.ShaderMaterial({
-                    ...additive,
-                    uniforms: { ...U },
-                    vertexShader: `
+                spin.add(
+                    new THREE.LineSegments(
+                        arcGeo,
+                        new THREE.ShaderMaterial({
+                            ...additive,
+                            uniforms: { ...U },
+                            vertexShader: `
                         attribute float aT, aSeed; varying float vT, vSeed, vFront;
                         ${FACING_GLSL}
                         void main() {
@@ -1510,7 +1560,7 @@
                             gl_Position = projectionMatrix * mv;
                         }
                     `,
-                    fragmentShader: `
+                            fragmentShader: `
                         uniform float uTime, uReveal; ${COLOR_UNIFORMS}
                         varying float vT, vSeed, vFront;
                         void main() {
@@ -1522,16 +1572,21 @@
                             gl_FragColor = vec4(col * (1.0 + trail * 0.6), a);
                         }
                     `,
-                })));
+                        }),
+                    ),
+                );
 
                 const nodeGeo = new THREE.BufferGeometry();
                 nodeGeo.setAttribute("position", new THREE.Float32BufferAttribute(nodePos, 3));
                 nodeGeo.setAttribute("aSeed", new THREE.Float32BufferAttribute(nodeSeed, 1));
                 nodeGeo.setAttribute("aHue", new THREE.Float32BufferAttribute(nodeHue, 1));
-                spin.add(new THREE.Points(nodeGeo, new THREE.ShaderMaterial({
-                    ...additive,
-                    uniforms: { ...U },
-                    vertexShader: `
+                spin.add(
+                    new THREE.Points(
+                        nodeGeo,
+                        new THREE.ShaderMaterial({
+                            ...additive,
+                            uniforms: { ...U },
+                            vertexShader: `
                         uniform float uPixelRatio, uReveal; attribute float aSeed, aHue;
                         varying float vSeed, vFront, vHue;
                         ${FACING_GLSL}
@@ -1543,7 +1598,7 @@
                             gl_Position = projectionMatrix * mv;
                         }
                     `,
-                    fragmentShader: `
+                            fragmentShader: `
                         uniform float uTime; ${COLOR_UNIFORMS}
                         varying float vSeed, vFront, vHue;
                         void main() {
@@ -1556,7 +1611,9 @@
                             gl_FragColor = vec4(col, (core + ring * 0.9 + glow) * vFront);
                         }
                     `,
-                })));
+                        }),
+                    ),
+                );
 
                 /* 4. 大氣光暈 */
                 const rimMat = new THREE.ShaderMaterial({
@@ -1580,12 +1637,15 @@
                     `,
                 });
                 tilt.add(new THREE.Mesh(new THREE.SphereGeometry(1.02, 64, 64), rimMat));
-                tilt.add(new THREE.Mesh(new THREE.SphereGeometry(1.28, 64, 64), new THREE.ShaderMaterial({
-                    ...additive,
-                    side: THREE.BackSide,
-                    uniforms: { ...U },
-                    vertexShader: rimMat.vertexShader,
-                    fragmentShader: `
+                tilt.add(
+                    new THREE.Mesh(
+                        new THREE.SphereGeometry(1.28, 64, 64),
+                        new THREE.ShaderMaterial({
+                            ...additive,
+                            side: THREE.BackSide,
+                            uniforms: { ...U },
+                            vertexShader: rimMat.vertexShader,
+                            fragmentShader: `
                         uniform float uReveal; ${COLOR_UNIFORMS}
                         varying vec3 vN, vV;
                         void main() {
@@ -1594,23 +1654,30 @@
                             gl_FragColor = vec4(mix(uBlue, uCyan, g), g * 0.30 * uReveal);
                         }
                     `,
-                })));
+                        }),
+                    ),
+                );
 
                 /* 5. 軌道環（青色主環 + 元大橘副環） */
                 function makeOrbit(radius, color, speed, dashCount, strength) {
-                    const p = [], t = [], seg = 256;
+                    const p = [],
+                        t = [],
+                        seg = 256;
                     for (let s = 0; s < seg; s++) {
-                        const a0 = (s / seg) * Math.PI * 2, a1 = ((s + 1) / seg) * Math.PI * 2;
+                        const a0 = (s / seg) * Math.PI * 2,
+                            a1 = ((s + 1) / seg) * Math.PI * 2;
                         p.push(Math.cos(a0) * radius, 0, Math.sin(a0) * radius, Math.cos(a1) * radius, 0, Math.sin(a1) * radius);
                         t.push(s / seg, (s + 1) / seg);
                     }
                     const geo = new THREE.BufferGeometry();
                     geo.setAttribute("position", new THREE.Float32BufferAttribute(p, 3));
                     geo.setAttribute("aT", new THREE.Float32BufferAttribute(t, 1));
-                    return new THREE.LineSegments(geo, new THREE.ShaderMaterial({
-                        ...additive,
-                        uniforms: { ...U, uColor: { value: v3(color) }, uSpeed: { value: speed }, uDash: { value: dashCount }, uStrength: { value: strength } },
-                        vertexShader: `
+                    return new THREE.LineSegments(
+                        geo,
+                        new THREE.ShaderMaterial({
+                            ...additive,
+                            uniforms: { ...U, uColor: { value: v3(color) }, uSpeed: { value: speed }, uDash: { value: dashCount }, uStrength: { value: strength } },
+                            vertexShader: `
                             attribute float aT; varying float vT, vBack;
                             void main() {
                                 vec4 mv = modelViewMatrix * vec4(position, 1.0);
@@ -1620,7 +1687,7 @@
                                 gl_Position = projectionMatrix * mv;
                             }
                         `,
-                        fragmentShader: `
+                            fragmentShader: `
                             uniform float uTime, uReveal, uSpeed, uDash, uStrength; uniform vec3 uColor;
                             varying float vT, vBack;
                             void main() {
@@ -1630,7 +1697,8 @@
                                 gl_FragColor = vec4(uColor * (1.0 + head * 0.6), a);
                             }
                         `,
-                    }));
+                        }),
+                    );
                 }
                 const orbitA = makeOrbit(1.42, C.cyan, 0.08, 180, 1.0);
                 orbitA.rotation.set(THREE.MathUtils.degToRad(74), 0, THREE.MathUtils.degToRad(12));
@@ -1639,11 +1707,16 @@
                 tilt.add(orbitA, orbitB);
 
                 /* 容器尺寸自適應：整顆地球（含軌道環）完整收進空白區 */
-                let targetScale = 1, hasSize = false;
+                let targetScale = 1,
+                    hasSize = false;
                 let radPerPx = 0.01; // 觸控拖曳：手指橫越整顆地球直徑 ≈ 轉 180°
                 function layout() {
-                    const w = wrap.clientWidth, h = wrap.clientHeight;
-                    if (!w || !h) { hasSize = false; return; }
+                    const w = wrap.clientWidth,
+                        h = wrap.clientHeight;
+                    if (!w || !h) {
+                        hasSize = false;
+                        return;
+                    }
                     hasSize = true;
                     const pr = Math.min(window.devicePixelRatio || 1, 2);
                     renderer.setPixelRatio(pr);
@@ -1654,7 +1727,7 @@
                     const vh = 2 * Math.tan(THREE.MathUtils.degToRad(camera.fov / 2)) * camera.position.z;
                     const vw = vh * camera.aspect;
                     targetScale = Math.min(vh, vw) / 2 / 1.5;
-                    const globeDiameterPx = (2 * targetScale / vh) * h;
+                    const globeDiameterPx = ((2 * targetScale) / vh) * h;
                     radPerPx = Math.PI / Math.max(globeDiameterPx, 120);
                 }
                 layout();
@@ -1662,14 +1735,19 @@
                 new ResizeObserver(layout).observe(wrap);
 
                 /* ───── 滑鼠：視差跟隨游標（僅限滑鼠） ───── */
-                const pointer = { x: 0, y: 0 }, smooth = { x: 0, y: 0 };
-                window.addEventListener("pointermove", (e) => {
-                    if (mqReduce.matches || e.pointerType !== "mouse") return;
-                    const r = wrap.getBoundingClientRect();
-                    if (!r.width || !r.height) return;
-                    pointer.x = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1.5, 1.5);
-                    pointer.y = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1.5, 1.5);
-                }, { passive: true });
+                const pointer = { x: 0, y: 0 },
+                    smooth = { x: 0, y: 0 };
+                window.addEventListener(
+                    "pointermove",
+                    (e) => {
+                        if (mqReduce.matches || e.pointerType !== "mouse") return;
+                        const r = wrap.getBoundingClientRect();
+                        if (!r.width || !r.height) return;
+                        pointer.x = THREE.MathUtils.clamp(((e.clientX - r.left) / r.width) * 2 - 1, -1.5, 1.5);
+                        pointer.y = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1.5, 1.5);
+                    },
+                    { passive: true },
+                );
 
                 /* ───── 觸控：在地球區域拖曳旋轉 + 慣性（可連續甩動疊加） ─────
                    拖曳一律以「螢幕方向」旋轉（右滑＝往右轉、下滑＝往下翻），不受地球目前姿態影響。
@@ -1679,26 +1757,30 @@
                    ・甩（接觸 < FLICK_MAX_MS）：地球不減速照轉，放開時把這次甩動速度「疊加」到目前慣性上（反向甩＝煞車）。
                    ・抓（接觸 ≥ FLICK_MAX_MS）：地球快速煞停並跟著手指轉，放開時只採用手指速度，不疊加。 */
                 const BASE_SPIN = () => (mqReduce.matches ? 0.03 : 0.075); // 自旋速度（rad/s）
-                const DRAG_THRESHOLD = 6;    // 移動超過 6px 才算拖曳，單純點一下不影響地球
-                const FLICK_MAX_MS = 200;    // 接觸時間門檻：短於此為「甩」，長於此為「抓」
-                const SETTLE_BASE = 7.25;    // 一般甩動回到自旋所需時間（秒）
-                const SETTLE_REF_SPEED = 7;  // 超過此速度（rad/s ≈ 每秒 1.1 圈）後，回穩時間隨速度拉長
-                const SETTLE_GROWTH = 0.6;   // 拉長幅度（對數成長：1 圈/秒 ≈ 7.25 秒、2 圈/秒上限 ≈ 9.8 秒）
-                const GRAB_BRAKE = 14;       // 「抓」時煞停的速度
+                const DRAG_THRESHOLD = 6; // 移動超過 6px 才算拖曳，單純點一下不影響地球
+                const FLICK_MAX_MS = 200; // 接觸時間門檻：短於此為「甩」，長於此為「抓」
+                const SETTLE_BASE = 7.25; // 一般甩動回到自旋所需時間（秒）
+                const SETTLE_REF_SPEED = 7; // 超過此速度（rad/s ≈ 每秒 1.1 圈）後，回穩時間隨速度拉長
+                const SETTLE_GROWTH = 0.6; // 拉長幅度（對數成長：1 圈/秒 ≈ 7.25 秒、2 圈/秒上限 ≈ 9.8 秒）
+                const GRAB_BRAKE = 14; // 「抓」時煞停的速度
                 const TURN = Math.PI * 2;
-                const SINGLE_MAX = 1.0 * TURN;  // 單次甩動最高轉速：每秒 1 圈（軟上限，逐漸逼近）
-                const TOTAL_MAX = 2.0 * TURN;   // 疊加後總轉速上限：每秒 2 圈（邊際遞減逼近）
-                const AXIS_RETURN = 0.9;     // 地軸回正速度
+                const SINGLE_MAX = 2.0 * TURN; // 單次甩動最高轉速：每秒 1 圈（軟上限，逐漸逼近）
+                const TOTAL_MAX = 8.0 * TURN; // 疊加後總轉速上限：每秒 2 圈（邊際遞減逼近）
+                const AXIS_RETURN = 0.9; // 地軸回正速度
 
                 const AXIS = new THREE.Vector3(0, 1, 0).applyQuaternion(tilt.quaternion); // 地球自轉軸（orient 座標）
-                const X_AXIS = new THREE.Vector3(1, 0, 0), Y_AXIS = new THREE.Vector3(0, 1, 0);
-                const releaseOmega = new THREE.Vector3();   // 最近一次放開時的角速度（螢幕座標，rad/s）
-                const omega = new THREE.Vector3();          // 目前慣性角速度
-                const grabOmega = new THREE.Vector3();      // 「抓」住時煞停中的殘餘速度
-                let releaseAt = -Infinity;                  // 最近一次放開的時間點（elapsed 秒）
-                let settleTime = SETTLE_BASE;               // 本次回穩所需時間
-                const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3();
-                const tmpQ = new THREE.Quaternion(), twistQ = new THREE.Quaternion(), idQ = new THREE.Quaternion();
+                const X_AXIS = new THREE.Vector3(1, 0, 0),
+                    Y_AXIS = new THREE.Vector3(0, 1, 0);
+                const releaseOmega = new THREE.Vector3(); // 最近一次放開時的角速度（螢幕座標，rad/s）
+                const omega = new THREE.Vector3(); // 目前慣性角速度
+                const grabOmega = new THREE.Vector3(); // 「抓」住時煞停中的殘餘速度
+                let releaseAt = -Infinity; // 最近一次放開的時間點（elapsed 秒）
+                let settleTime = SETTLE_BASE; // 本次回穩所需時間
+                const tmpV = new THREE.Vector3(),
+                    tmpV2 = new THREE.Vector3();
+                const tmpQ = new THREE.Quaternion(),
+                    twistQ = new THREE.Quaternion(),
+                    idQ = new THREE.Quaternion();
                 // mode: "idle" 無接觸｜"pending" 已按下、尚未判定｜"grab" 抓住
                 const drag = { id: null, mode: "idle", moved: false, downAt: 0, startX: 0, startY: 0, lastX: 0, lastY: 0, samples: [] };
 
@@ -1724,10 +1806,10 @@
                     const proj = q.x * AXIS.x + q.y * AXIS.y + q.z * AXIS.z;
                     const len = Math.hypot(proj, q.w);
                     if (len < 1e-6) return; // 翻轉恰為 180° 的奇異點，下一幀再處理
-                    twistQ.set(AXIS.x * proj / len, AXIS.y * proj / len, AXIS.z * proj / len, q.w / len);
+                    twistQ.set((AXIS.x * proj) / len, (AXIS.y * proj) / len, (AXIS.z * proj) / len, q.w / len);
                     const angle = 2 * Math.atan2(proj, q.w);
-                    q.multiply(twistQ.invert()).normalize();  // swing = q · twist⁻¹
-                    spin.rotation.y += angle;                  // orient·tilt = swing·tilt·R_y(angle)
+                    q.multiply(twistQ.invert()).normalize(); // swing = q · twist⁻¹
+                    spin.rotation.y += angle; // orient·tilt = swing·tilt·R_y(angle)
                 }
 
                 // 使用事件本身的時間戳記（而非處理時間），主執行緒忙碌時速度估算依然準確
@@ -1740,7 +1822,8 @@
                 // 以 tanh 軟上限換算：輕甩幾乎照手指速度，越用力越逼近 SINGLE_MAX，不會撞牆式卡住
                 function fingerOmega(e, out) {
                     out.set(0, 0, 0);
-                    const s0 = drag.samples[0], s1 = drag.samples[drag.samples.length - 1];
+                    const s0 = drag.samples[0],
+                        s1 = drag.samples[drag.samples.length - 1];
                     if (!s0 || !s1) return out;
                     const dtMs = s1.t - s0.t;
                     if (dtMs > 8 && e.timeStamp - s1.t < 80) {
@@ -1754,10 +1837,11 @@
                 // 疊加：current = 目前速度，flick = 這次甩動速度（皆為螢幕座標角速度），結果寫回 out
                 // ・同方向：邊際遞減，越接近 TOTAL_MAX 加得越少（1 → 1.5 → 1.75 → 1.9 圈/秒…）
                 // ・反方向：全額煞車，不遞減
-                const parV = new THREE.Vector3(), perpV = new THREE.Vector3();
+                const parV = new THREE.Vector3(),
+                    perpV = new THREE.Vector3();
                 function stackOmega(current, flick, out) {
                     const c = current.length();
-                    const room = Math.max(0, 1 - c / TOTAL_MAX);   // 剩餘加速空間
+                    const room = Math.max(0, 1 - c / TOTAL_MAX); // 剩餘加速空間
                     out.copy(current);
                     if (c < 1e-6) {
                         out.addScaledVector(flick, room);
@@ -1767,9 +1851,9 @@
                         parV.copy(dir).multiplyScalar(along);
                         perpV.copy(flick).sub(parV);
                         out.addScaledVector(parV, along >= 0 ? room : 1); // 同向遞減／反向全額
-                        out.addScaledVector(perpV, room);                  // 側向分量也遞減
+                        out.addScaledVector(perpV, room); // 側向分量也遞減
                     }
-                    if (out.length() > TOTAL_MAX) out.setLength(TOTAL_MAX);  // 保險
+                    if (out.length() > TOTAL_MAX) out.setLength(TOTAL_MAX); // 保險
                     return out;
                 }
 
@@ -1781,8 +1865,20 @@
                 }
 
                 // 在地球區域阻止 iOS 長按選字／放大鏡（僅限此區域，不影響頁面其他地方）
-                wrap.addEventListener("touchstart", (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
-                wrap.addEventListener("touchmove", (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+                wrap.addEventListener(
+                    "touchstart",
+                    (e) => {
+                        if (e.cancelable) e.preventDefault();
+                    },
+                    { passive: false },
+                );
+                wrap.addEventListener(
+                    "touchmove",
+                    (e) => {
+                        if (e.cancelable) e.preventDefault();
+                    },
+                    { passive: false },
+                );
                 wrap.addEventListener("contextmenu", (e) => e.preventDefault());
                 wrap.addEventListener("selectstart", (e) => e.preventDefault());
 
@@ -1796,7 +1892,9 @@
                     drag.startY = drag.lastY = e.clientY;
                     drag.samples = [];
                     sample(e);
-                    try { wrap.setPointerCapture(e.pointerId); } catch (_) {}
+                    try {
+                        wrap.setPointerCapture(e.pointerId);
+                    } catch (_) {}
                 });
 
                 wrap.addEventListener("pointermove", (e) => {
@@ -1812,8 +1910,8 @@
                     const dy = e.clientY - drag.lastY;
                     drag.lastX = e.clientX;
                     drag.lastY = e.clientY;
-                    rotateScreen(Y_AXIS, dx * radPerPx);  // 右滑 → 正面往右轉（甩的期間同時保留原本慣性）
-                    rotateScreen(X_AXIS, dy * radPerPx);  // 下滑 → 正面往下翻
+                    rotateScreen(Y_AXIS, dx * radPerPx); // 右滑 → 正面往右轉（甩的期間同時保留原本慣性）
+                    rotateScreen(X_AXIS, dy * radPerPx); // 下滑 → 正面往下翻
                     sample(e);
                 });
 
@@ -1829,7 +1927,10 @@
                     } else if (isFlick && drag.moved) {
                         // 甩：(目前慣性 + 目前自旋) 與這次甩動速度疊加（邊際遞減／反向全額煞車）
                         const f = inertiaFactor();
-                        tmpV2.copy(releaseOmega).multiplyScalar(f).addScaledVector(AXIS, BASE_SPIN() * (1 - f));
+                        tmpV2
+                            .copy(releaseOmega)
+                            .multiplyScalar(f)
+                            .addScaledVector(AXIS, BASE_SPIN() * (1 - f));
                         const flick = fingerOmega(e, new THREE.Vector3());
                         stackOmega(tmpV2, flick, releaseOmega);
                         settleTime = settleFor(releaseOmega.length());
@@ -1837,7 +1938,9 @@
                     }
                     // 單純點一下（沒有移動、時間很短）：什麼都不變
 
-                    try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
+                    try {
+                        wrap.releasePointerCapture(e.pointerId);
+                    } catch (_) {}
                     drag.id = null;
                     drag.mode = "idle";
                 }
@@ -1850,7 +1953,10 @@
                 let elapsed = 0;
                 new IntersectionObserver(([entry]) => {
                     const now = entry.isIntersecting;
-                    if (now && !visible) { revealStart = elapsed; layout(); }
+                    if (now && !visible) {
+                        revealStart = elapsed;
+                        layout();
+                    }
                     visible = now;
                 }).observe(wrap);
 
@@ -1950,17 +2056,23 @@
 
                 let stars = null;
                 function build() {
-                    if (stars) { stars.geometry.dispose(); scene.remove(stars); }
+                    if (stars) {
+                        stars.geometry.dispose();
+                        scene.remove(stars);
+                    }
                     const n = starCount();
-                    const pos = [], rnd = [], tone = [], kind = [];
+                    const pos = [],
+                        rnd = [],
+                        tone = [],
+                        kind = [];
                     for (let i = 0; i < n; i++) {
-                        const depth = Math.random();                 // 0 遠 → 1 近（影響大小、亮度與視差）
+                        const depth = Math.random(); // 0 遠 → 1 近（影響大小、亮度與視差）
                         pos.push(Math.random() * 2 - 1, Math.random() * 2 - 1, depth);
                         rnd.push(Math.random());
                         const t = Math.random();
                         tone.push(t < 0.6 ? 0 : t < 0.84 ? 1 : t < 0.96 ? 2 : 3); // 0 白 1 淡藍 2 青 3 暖橘
                         const k = Math.random();
-                        kind.push(k < 0.07 ? 2 : k < 0.22 ? 1 : 0);  // 2 亮星（帶光暈）1 閃爍星 0 一般星
+                        kind.push(k < 0.07 ? 2 : k < 0.22 ? 1 : 0); // 2 亮星（帶光暈）1 閃爍星 0 一般星
                     }
                     const geo = new THREE.BufferGeometry();
                     geo.setAttribute("position", new THREE.Float32BufferAttribute(pos, 3));
@@ -2037,7 +2149,8 @@
                 });
 
                 function resize() {
-                    const w = window.innerWidth, h = window.innerHeight;
+                    const w = window.innerWidth,
+                        h = window.innerHeight;
                     const pr = Math.min(window.devicePixelRatio || 1, 2.5);
                     renderer.setPixelRatio(pr);
                     renderer.setSize(w, h, false);
@@ -2047,29 +2160,43 @@
                 resize();
                 build();
                 let lastCount = starCount();
-                window.addEventListener("resize", () => {
-                    resize();
-                    const c = starCount();
-                    if (Math.abs(c - lastCount) / lastCount > 0.25) { lastCount = c; build(); }
-                }, { passive: true });
+                window.addEventListener(
+                    "resize",
+                    () => {
+                        resize();
+                        const c = starCount();
+                        if (Math.abs(c - lastCount) / lastCount > 0.25) {
+                            lastCount = c;
+                            build();
+                        }
+                    },
+                    { passive: true },
+                );
 
                 /* 輕微視差（僅滑鼠；觸控時星空不跟手指移動） */
-                const p = { x: 0, y: 0 }, s = { x: 0, y: 0 };
-                window.addEventListener("pointermove", (e) => {
-                    if (mqReduce.matches || e.pointerType !== "mouse") return;
-                    p.x = (e.clientX / window.innerWidth) * 2 - 1;
-                    p.y = -((e.clientY / window.innerHeight) * 2 - 1);
-                }, { passive: true });
+                const p = { x: 0, y: 0 },
+                    s = { x: 0, y: 0 };
+                window.addEventListener(
+                    "pointermove",
+                    (e) => {
+                        if (mqReduce.matches || e.pointerType !== "mouse") return;
+                        p.x = (e.clientX / window.innerWidth) * 2 - 1;
+                        p.y = -((e.clientY / window.innerHeight) * 2 - 1);
+                    },
+                    { passive: true },
+                );
 
                 /* 約 30fps 即足夠，省電 */
                 const clock = new THREE.Clock();
-                let t = 0, acc = 0;
+                let t = 0,
+                    acc = 0;
                 function loop() {
                     requestAnimationFrame(loop);
                     const dt = Math.min(clock.getDelta(), 0.1);
                     acc += dt;
                     if (acc < 1 / 30) return;
-                    const step = acc; acc = 0;
+                    const step = acc;
+                    acc = 0;
                     const reduce = mqReduce.matches;
                     if (!reduce) t += step;
                     U.uTime.value = t;
