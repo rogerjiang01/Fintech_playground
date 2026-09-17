@@ -471,6 +471,10 @@
                 min-height: 140px;
                 /* 地球區域可直接拖曳：手指在這裡滑動不會觸發頁面捲動 */
                 touch-action: none;
+                /* 長按不選字、不跳出系統選單（iOS 需 -webkit- 前綴） */
+                -webkit-user-select: none;
+                user-select: none;
+                -webkit-touch-callout: none;
             }
             .intro-globe canvas {
                 position: absolute;
@@ -1667,23 +1671,42 @@
                     pointer.y = THREE.MathUtils.clamp(((e.clientY - r.top) / r.height) * 2 - 1, -1.5, 1.5);
                 }, { passive: true });
 
-                /* ───── 觸控：在地球區域拖曳旋轉 + 慣性 ─────
+                /* ───── 觸控：在地球區域拖曳旋轉 + 慣性（可連續甩動疊加） ─────
                    拖曳一律以「螢幕方向」旋轉（右滑＝往右轉、下滑＝往下翻），不受地球目前姿態影響。
-                   地軸自轉量會即時轉交給 spin，orient 只保留「地軸偏離正常角度」的部分，放開後平順回正。 */
+                   地軸自轉量會即時轉交給 spin，orient 只保留「地軸偏離正常角度」的部分，放開後平順回正。
+
+                   接觸分兩種：
+                   ・甩（接觸 < FLICK_MAX_MS）：地球不減速照轉，放開時把這次甩動速度「疊加」到目前慣性上（反向甩＝煞車）。
+                   ・抓（接觸 ≥ FLICK_MAX_MS）：地球快速煞停並跟著手指轉，放開時只採用手指速度，不疊加。 */
                 const BASE_SPIN = () => (mqReduce.matches ? 0.03 : 0.075); // 自旋速度（rad/s）
-                const MAX_VEL = 7;          // 甩動速度上限（rad/s）
-                const DRAG_THRESHOLD = 6;   // 移動超過 6px 才算拖曳，單純點一下不影響地球
-                const SETTLE_TIME = 7.25;   // 放開後回到原本自旋速度所需時間（秒）
-                const AXIS_RETURN = 0.9;    // 地軸回正速度
+                const DRAG_THRESHOLD = 6;    // 移動超過 6px 才算拖曳，單純點一下不影響地球
+                const FLICK_MAX_MS = 200;    // 接觸時間門檻：短於此為「甩」，長於此為「抓」
+                const SETTLE_BASE = 7.25;    // 一般甩動回到自旋所需時間（秒）
+                const SETTLE_REF_SPEED = 7;  // 超過此速度（rad/s ≈ 每秒 1.1 圈）後，回穩時間隨速度拉長
+                const SETTLE_GROWTH = 0.6;   // 拉長幅度（對數成長：2 倍速 ≈ 10.3 秒、5 倍速 ≈ 14.3 秒）
+                const GRAB_BRAKE = 14;       // 「抓」時煞停的速度
+                const AXIS_RETURN = 0.9;     // 地軸回正速度
 
                 const AXIS = new THREE.Vector3(0, 1, 0).applyQuaternion(tilt.quaternion); // 地球自轉軸（orient 座標）
                 const X_AXIS = new THREE.Vector3(1, 0, 0), Y_AXIS = new THREE.Vector3(0, 1, 0);
-                const releaseOmega = new THREE.Vector3();   // 放開瞬間的角速度（螢幕座標，rad/s）
+                const releaseOmega = new THREE.Vector3();   // 最近一次放開時的角速度（螢幕座標，rad/s）
                 const omega = new THREE.Vector3();          // 目前慣性角速度
-                let releaseAt = -Infinity;                  // 放開的時間點（elapsed 秒）
-                const tmpV = new THREE.Vector3();
+                const grabOmega = new THREE.Vector3();      // 「抓」住時煞停中的殘餘速度
+                let releaseAt = -Infinity;                  // 最近一次放開的時間點（elapsed 秒）
+                let settleTime = SETTLE_BASE;               // 本次回穩所需時間
+                const tmpV = new THREE.Vector3(), tmpV2 = new THREE.Vector3();
                 const tmpQ = new THREE.Quaternion(), twistQ = new THREE.Quaternion(), idQ = new THREE.Quaternion();
-                const drag = { id: null, active: false, startX: 0, startY: 0, lastX: 0, lastY: 0, samples: [] };
+                // mode: "idle" 無接觸｜"pending" 已按下、尚未判定｜"grab" 抓住
+                const drag = { id: null, mode: "idle", moved: false, downAt: 0, startX: 0, startY: 0, lastX: 0, lastY: 0, samples: [] };
+
+                function settleFor(speed) {
+                    return SETTLE_BASE * (1 + SETTLE_GROWTH * Math.log(Math.max(1, speed / SETTLE_REF_SPEED)));
+                }
+                // 目前慣性衰減比例（1 → 0）
+                function inertiaFactor() {
+                    const u = THREE.MathUtils.clamp((elapsed - releaseAt) / settleTime, 0, 1);
+                    return Math.pow(1 - u, 3);
+                }
 
                 // 以世界（螢幕）座標軸旋轉 orient
                 function rotateScreen(axis, angle) {
@@ -1710,11 +1733,37 @@
                     drag.samples.push({ t: now, x: e.clientX, y: e.clientY });
                     while (drag.samples.length > 2 && now - drag.samples[0].t > 100) drag.samples.shift();
                 }
+                // 手指放開前的速度（螢幕座標角速度）；放開前 80ms 內沒在動 → 0
+                function fingerOmega(e, out) {
+                    out.set(0, 0, 0);
+                    const s0 = drag.samples[0], s1 = drag.samples[drag.samples.length - 1];
+                    if (!s0 || !s1) return out;
+                    const dtMs = s1.t - s0.t;
+                    if (dtMs > 8 && e.timeStamp - s1.t < 80) {
+                        out.set(((s1.y - s0.y) / dtMs) * 1000 * radPerPx, ((s1.x - s0.x) / dtMs) * 1000 * radPerPx, 0);
+                    }
+                    return out;
+                }
+
+                function enterGrab() {
+                    if (drag.mode !== "pending") return;
+                    drag.mode = "grab";
+                    grabOmega.copy(releaseOmega).multiplyScalar(inertiaFactor()); // 從目前速度開始快速煞停
+                    releaseOmega.set(0, 0, 0);
+                }
+
+                // 在地球區域阻止 iOS 長按選字／放大鏡（僅限此區域，不影響頁面其他地方）
+                wrap.addEventListener("touchstart", (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+                wrap.addEventListener("touchmove", (e) => { if (e.cancelable) e.preventDefault(); }, { passive: false });
+                wrap.addEventListener("contextmenu", (e) => e.preventDefault());
+                wrap.addEventListener("selectstart", (e) => e.preventDefault());
 
                 wrap.addEventListener("pointerdown", (e) => {
                     if (e.pointerType === "mouse" || drag.id !== null) return;
                     drag.id = e.pointerId;
-                    drag.active = false;
+                    drag.mode = "pending";
+                    drag.moved = false;
+                    drag.downAt = e.timeStamp;
                     drag.startX = drag.lastX = e.clientX;
                     drag.startY = drag.lastY = e.clientY;
                     drag.samples = [];
@@ -1724,42 +1773,46 @@
 
                 wrap.addEventListener("pointermove", (e) => {
                     if (e.pointerId !== drag.id) return;
-                    if (!drag.active) {
+                    if (!drag.moved) {
                         if (Math.hypot(e.clientX - drag.startX, e.clientY - drag.startY) < DRAG_THRESHOLD) return;
-                        drag.active = true;             // 開始拖曳：暫停自旋與慣性
+                        drag.moved = true;
                         drag.lastX = e.clientX;
                         drag.lastY = e.clientY;
-                        omega.set(0, 0, 0);
                     }
+                    if (drag.mode === "pending" && e.timeStamp - drag.downAt >= FLICK_MAX_MS) enterGrab();
                     const dx = e.clientX - drag.lastX;
                     const dy = e.clientY - drag.lastY;
                     drag.lastX = e.clientX;
                     drag.lastY = e.clientY;
-                    rotateScreen(Y_AXIS, dx * radPerPx);  // 右滑 → 正面往右轉
+                    rotateScreen(Y_AXIS, dx * radPerPx);  // 右滑 → 正面往右轉（甩的期間同時保留原本慣性）
                     rotateScreen(X_AXIS, dy * radPerPx);  // 下滑 → 正面往下翻
                     sample(e);
                 });
 
                 function endDrag(e) {
                     if (e.pointerId !== drag.id) return;
-                    if (drag.active) {
-                        const now = e.timeStamp;
-                        const s0 = drag.samples[0], s1 = drag.samples[drag.samples.length - 1];
-                        const dtMs = s1 && s0 ? s1.t - s0.t : 0;
-                        releaseOmega.set(0, 0, 0);
-                        // 放開前 80ms 內還在移動才給慣性；停住再放開 → 無慣性
-                        if (s0 && s1 && dtMs > 8 && now - s1.t < 80) {
-                            releaseOmega.set(
-                                ((s1.y - s0.y) / dtMs) * 1000 * radPerPx,  // 繞螢幕 X 軸
-                                ((s1.x - s0.x) / dtMs) * 1000 * radPerPx,  // 繞螢幕 Y 軸
-                                0
-                            ).clampLength(0, MAX_VEL);
-                        }
+                    const isFlick = drag.mode === "pending" && e.timeStamp - drag.downAt < FLICK_MAX_MS;
+
+                    if (drag.mode === "grab" || (drag.mode === "pending" && !isFlick)) {
+                        // 抓：只採用手指速度
+                        fingerOmega(e, releaseOmega);
+                        settleTime = settleFor(releaseOmega.length());
+                        releaseAt = elapsed;
+                    } else if (isFlick && drag.moved) {
+                        // 甩：目前慣性 + 目前自旋 + 這次甩動速度 → 疊加
+                        const f = inertiaFactor();
+                        tmpV2.copy(releaseOmega).multiplyScalar(f)
+                            .addScaledVector(AXIS, BASE_SPIN() * (1 - f))
+                            .add(fingerOmega(e, tmpV));
+                        releaseOmega.copy(tmpV2);
+                        settleTime = settleFor(releaseOmega.length());
                         releaseAt = elapsed;
                     }
+                    // 單純點一下（沒有移動、時間很短）：什麼都不變
+
                     try { wrap.releasePointerCapture(e.pointerId); } catch (_) {}
                     drag.id = null;
-                    drag.active = false;
+                    drag.mode = "idle";
                 }
                 wrap.addEventListener("pointerup", endDrag);
                 wrap.addEventListener("pointercancel", endDrag);
@@ -1786,11 +1839,22 @@
                     const ease = 1 - Math.pow(1 - r, 3);
                     U.uReveal.value = ease;
 
-                    if (!drag.active) {
-                        // 放開後 SETTLE_TIME 秒內：慣性以 ease-out 曲線 (1-u)³ 衰減，自旋同步由 0 補回。
-                        // 兩者相加 = 自旋 + (甩動速度 − 自旋) × (1-u)³，反向甩動會先減速、平順轉回原方向，約 7.25 秒完全接回。
-                        const u = THREE.MathUtils.clamp((elapsed - releaseAt) / SETTLE_TIME, 0, 1);
-                        const f = Math.pow(1 - u, 3);
+                    // 按住不動超過門檻 → 視為「抓」
+                    if (drag.mode === "pending" && performance.now() - drag.downAt >= FLICK_MAX_MS) enterGrab();
+
+                    if (drag.mode === "grab") {
+                        // 抓住：殘餘速度快速煞停，自旋暫停，由手指主導
+                        grabOmega.multiplyScalar(Math.exp(-dt * GRAB_BRAKE));
+                        const gw = grabOmega.length();
+                        if (gw > 1e-4) {
+                            tmpQ.setFromAxisAngle(tmpV.copy(grabOmega).divideScalar(gw), gw * dt);
+                            orient.quaternion.premultiply(tmpQ);
+                        }
+                    } else {
+                        // 放開後 settleTime 秒內：慣性以 ease-out 曲線 (1-u)³ 衰減，自旋同步由 0 補回。
+                        // 兩者相加 = 自旋 + (甩動速度 − 自旋) × (1-u)³；反向甩動會先減速、平順轉回原方向。
+                        // 甩動期間（pending）照常運作，不打斷原本的轉動。
+                        const f = inertiaFactor();
                         omega.copy(releaseOmega).multiplyScalar(f);
 
                         // 慣性（螢幕座標）
@@ -1802,11 +1866,13 @@
                         // 自旋（地軸）
                         spin.rotation.y += BASE_SPIN() * (1 - f) * dt;
 
-                        // 地軸回正：仍在快速翻轉時先不拉回，慢下來後平順轉回正常角度
-                        const perp = tmpV.copy(omega).addScaledVector(AXIS, -omega.dot(AXIS)).length();
-                        const settle = 1 - THREE.MathUtils.clamp(perp / 1.5, 0, 1);
-                        if (orient.quaternion.w < 0) orient.quaternion.set(-orient.quaternion.x, -orient.quaternion.y, -orient.quaternion.z, -orient.quaternion.w);
-                        orient.quaternion.slerp(idQ, (1 - Math.exp(-dt * AXIS_RETURN)) * settle);
+                        // 地軸回正：仍在快速翻轉時先不拉回，慢下來後平順轉回正常角度（手指接觸中不拉回）
+                        if (drag.mode === "idle") {
+                            const perp = tmpV.copy(omega).addScaledVector(AXIS, -omega.dot(AXIS)).length();
+                            const settle = 1 - THREE.MathUtils.clamp(perp / 1.5, 0, 1);
+                            if (orient.quaternion.w < 0) orient.quaternion.set(-orient.quaternion.x, -orient.quaternion.y, -orient.quaternion.z, -orient.quaternion.w);
+                            orient.quaternion.slerp(idQ, (1 - Math.exp(-dt * AXIS_RETURN)) * settle);
+                        }
                     }
                     transferTwist();
                     spin.rotation.y %= Math.PI * 2;
