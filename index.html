@@ -263,17 +263,70 @@
                由 JS 判斷「觸控為主的裝置」後加上 body.tablet-mode（電腦即使視窗拉到同寬也不會套用）。
                全螢幕無外框；內容置中，最大寬度由 --tablet-content-max 控制，避免文字與按鈕被拉得過長。 */
             :root {
-                --tablet-content-max: 760px;
+                --tablet-scale: 1;               /* 由 JS 依螢幕尺寸自動計算（見 TABLET_SCALE_MAX） */
+                --tablet-content-max: 760px;     /* 內容欄基準寬度，實際寬度 = 此值 × 倍率 */
                 --tablet-gutter: 24px;
             }
             body.tablet-mode .device-container > header,
             body.tablet-mode main > section {
-                padding-left: max(var(--tablet-gutter), calc((100% - var(--tablet-content-max)) / 2));
-                padding-right: max(var(--tablet-gutter), calc((100% - var(--tablet-content-max)) / 2));
+                padding-left: max(var(--tablet-gutter), calc((100% - var(--tablet-content-max) * var(--tablet-scale)) / 2));
+                padding-right: max(var(--tablet-gutter), calc((100% - var(--tablet-content-max) * var(--tablet-scale)) / 2));
             }
             body.tablet-mode main > section {
-                padding-top: 20px;
-                padding-bottom: max(20px, env(safe-area-inset-bottom));
+                padding-top: calc(20px * var(--tablet-scale));
+                padding-bottom: max(calc(20px * var(--tablet-scale)), env(safe-area-inset-bottom));
+            }
+
+            /* 平板等比放大：
+               ・Tailwind 標準 class（p-3、gap-2、w-6、text-xs…）以 rem 計算 → JS 調整 html 字級即一併放大
+               ・寫死 px 的 class（text-[13.5px]、h-[50px]…）與自訂元件 → 以下逐一乘上 --tablet-scale */
+            body.tablet-mode .h-\[160px\] { height: calc(160px * var(--tablet-scale)); }
+            body.tablet-mode .h-\[50px\] { height: calc(50px * var(--tablet-scale)); }
+            body.tablet-mode .max-w-\[280px\] { max-width: calc(280px * var(--tablet-scale)); }
+            body.tablet-mode .rounded-\[10px\] { border-radius: calc(10px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[11\.5px\] { font-size: calc(11.5px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[11px\] { font-size: calc(11px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[12\.5px\] { font-size: calc(12.5px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[12px\] { font-size: calc(12px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[13\.5px\] { font-size: calc(13.5px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[13px\] { font-size: calc(13px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[14\.5px\] { font-size: calc(14.5px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[14px\] { font-size: calc(14px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[15\.5px\] { font-size: calc(15.5px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[15px\] { font-size: calc(15px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[16\.5px\] { font-size: calc(16.5px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[16px\] { font-size: calc(16px * var(--tablet-scale)); }
+            body.tablet-mode .text-\[20px\] { font-size: calc(20px * var(--tablet-scale)); }
+            body.tablet-mode .sm\:h-\[200px\] { height: calc(200px * var(--tablet-scale)); }
+            body.tablet-mode .sm\:text-\[14px\] { font-size: calc(14px * var(--tablet-scale)); }
+            body.tablet-mode .option-card {
+                border-radius: calc(10px * var(--tablet-scale));
+                padding: calc(9px * var(--tablet-scale)) calc(12px * var(--tablet-scale));
+                min-height: calc(44px * var(--tablet-scale));
+                gap: calc(10px * var(--tablet-scale));
+            }
+            body.tablet-mode .hud-bracket-box::before,
+            body.tablet-mode .hud-bracket-box::after {
+                width: calc(8px * var(--tablet-scale));
+                height: calc(8px * var(--tablet-scale));
+            }
+            body.tablet-mode .ticker-track {
+                gap: calc(16px * var(--tablet-scale));
+            }
+
+            /* 平板橫式：高度較矮，題目情境圖縮短，讓作答＋解析＋下一題在一屏內放得下 */
+            @media (orientation: landscape) {
+                body.tablet-mode #qImgFrame {
+                    height: calc(200px * var(--tablet-scale) - var(--tablet-landscape-img-cut, 90px));
+                }
+            }
+
+            /* 內容較短的頁面（結算頁）：內容整組垂直置中，留白上下平均分配；內容超過一屏時照常由上往下排、可捲動 */
+            body.tablet-mode #view-result > :first-child {
+                margin-top: auto;
+            }
+            body.tablet-mode #view-result > :last-child {
+                margin-bottom: auto;
             }
 
             /* Custom Scrollbar & Touch Scrolling */
@@ -1001,6 +1054,7 @@
                     const el = document.getElementById("view-intro");
                     el.classList.remove("hidden");
                     el.scrollTop = 0;
+                    fitTabletScale(); // 平板：確保首頁一屏放得下
                 } else if (name === "quiz") {
                     const el = document.getElementById("view-quiz");
                     el.classList.remove("hidden");
@@ -1177,12 +1231,48 @@
                 const iPadAsMac = /Macintosh/.test(navigator.userAgent) && navigator.maxTouchPoints > 1;
                 return window.innerWidth > 768 && (coarse || iPadAsMac);
             }
+            /* 平板放大倍率
+               ・依螢幕尺寸自動計算：寬度以 640px、高度以 745px 為 1 倍基準，取兩者較小值
+                 （iPad 直式約 1.25–1.4、橫式約 1.1）
+               ・TABLET_SCALE_MAX：倍率上限，可自行調整
+               ・首頁若放大後需要捲動，會自動逐步調小倍率，確保首頁一屏放得下 */
+            const TABLET_SCALE_MAX = 1.4;
+            const TABLET_REF_WIDTH = 640;
+            const TABLET_REF_HEIGHT = 745;
+
+            function setTabletScale(scale) {
+                document.documentElement.style.setProperty("--tablet-scale", scale.toFixed(3));
+                document.documentElement.style.fontSize = 16 * scale + "px"; // Tailwind rem 單位一併放大
+            }
+            function fitTabletScale() {
+                if (!document.body.classList.contains("tablet-mode")) return;
+                let scale = Math.min(window.innerWidth / TABLET_REF_WIDTH, window.innerHeight / TABLET_REF_HEIGHT);
+                scale = Math.max(1, Math.min(TABLET_SCALE_MAX, scale));
+                setTabletScale(scale);
+                // 首頁一屏放得下：有溢出就每次調小 0.02
+                const intro = document.getElementById("view-intro");
+                if (intro && !intro.classList.contains("hidden")) {
+                    while (scale > 1 && intro.scrollHeight > intro.clientHeight + 1) {
+                        scale = Math.max(1, scale - 0.02);
+                        setTabletScale(scale);
+                    }
+                }
+            }
             function applyTabletMode() {
                 const tablet = isTouchTablet();
                 document.body.classList.toggle("tablet-mode", tablet);
-                if (tablet) document.body.classList.remove("mockup-mode");
+                if (tablet) {
+                    document.body.classList.remove("mockup-mode");
+                    fitTabletScale();
+                } else {
+                    document.documentElement.style.removeProperty("--tablet-scale");
+                    document.documentElement.style.fontSize = "";
+                }
                 return tablet;
             }
+            // 樣式（Tailwind CDN）與字型載入完成後再校正一次倍率
+            window.addEventListener("load", fitTabletScale);
+            if (document.fonts && document.fonts.ready) document.fonts.ready.then(fitTabletScale);
             // 平板旋轉（直式 ↔ 橫式）或分割畫面改變寬度時重新判斷
             window.addEventListener("resize", () => {
                 if (document.body.classList.contains("mockup-mode")) return; // 電腦外框模式不受影響
