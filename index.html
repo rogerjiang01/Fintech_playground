@@ -55,6 +55,11 @@
                 user-select: none;
             }
 
+            /* 首頁「已完成挑戰」提示條：以 hidden 屬性切換（避免影響 space-y 間距） */
+            #completedBanner[hidden] {
+                display: none !important;
+            }
+
             .hidden {
                 display: none !important;
             }
@@ -263,8 +268,8 @@
                由 JS 判斷「觸控為主的裝置」後加上 body.tablet-mode（電腦即使視窗拉到同寬也不會套用）。
                全螢幕無外框；內容置中，最大寬度由 --tablet-content-max 控制，避免文字與按鈕被拉得過長。 */
             :root {
-                --tablet-scale: 1;               /* 由 JS 依螢幕尺寸自動計算（見 TABLET_SCALE_MAX） */
-                --tablet-content-max: 760px;     /* 內容欄基準寬度，實際寬度 = 此值 × 倍率 */
+                --tablet-scale: 1; /* 由 JS 依螢幕尺寸自動計算（見 TABLET_SCALE_MAX） */
+                --tablet-content-max: 760px; /* 內容欄基準寬度，實際寬度 = 此值 × 倍率 */
                 --tablet-gutter: 24px;
             }
             body.tablet-mode .device-container > header,
@@ -280,25 +285,63 @@
             /* 平板等比放大：
                ・Tailwind 標準 class（p-3、gap-2、w-6、text-xs…）以 rem 計算 → JS 調整 html 字級即一併放大
                ・寫死 px 的 class（text-[13.5px]、h-[50px]…）與自訂元件 → 以下逐一乘上 --tablet-scale */
-            body.tablet-mode .h-\[160px\] { height: calc(160px * var(--tablet-scale)); }
-            body.tablet-mode .h-\[50px\] { height: calc(50px * var(--tablet-scale)); }
-            body.tablet-mode .max-w-\[280px\] { max-width: calc(280px * var(--tablet-scale)); }
-            body.tablet-mode .rounded-\[10px\] { border-radius: calc(10px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[11\.5px\] { font-size: calc(11.5px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[11px\] { font-size: calc(11px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[12\.5px\] { font-size: calc(12.5px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[12px\] { font-size: calc(12px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[13\.5px\] { font-size: calc(13.5px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[13px\] { font-size: calc(13px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[14\.5px\] { font-size: calc(14.5px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[14px\] { font-size: calc(14px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[15\.5px\] { font-size: calc(15.5px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[15px\] { font-size: calc(15px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[16\.5px\] { font-size: calc(16.5px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[16px\] { font-size: calc(16px * var(--tablet-scale)); }
-            body.tablet-mode .text-\[20px\] { font-size: calc(20px * var(--tablet-scale)); }
-            body.tablet-mode .sm\:h-\[200px\] { height: calc(200px * var(--tablet-scale)); }
-            body.tablet-mode .sm\:text-\[14px\] { font-size: calc(14px * var(--tablet-scale)); }
+            body.tablet-mode .h-\[160px\] {
+                height: calc(160px * var(--tablet-scale));
+            }
+            body.tablet-mode .h-\[50px\] {
+                height: calc(50px * var(--tablet-scale));
+            }
+            body.tablet-mode .max-w-\[280px\] {
+                max-width: calc(280px * var(--tablet-scale));
+            }
+            body.tablet-mode .rounded-\[10px\] {
+                border-radius: calc(10px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[11\.5px\] {
+                font-size: calc(11.5px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[11px\] {
+                font-size: calc(11px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[12\.5px\] {
+                font-size: calc(12.5px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[12px\] {
+                font-size: calc(12px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[13\.5px\] {
+                font-size: calc(13.5px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[13px\] {
+                font-size: calc(13px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[14\.5px\] {
+                font-size: calc(14.5px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[14px\] {
+                font-size: calc(14px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[15\.5px\] {
+                font-size: calc(15.5px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[15px\] {
+                font-size: calc(15px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[16\.5px\] {
+                font-size: calc(16.5px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[16px\] {
+                font-size: calc(16px * var(--tablet-scale));
+            }
+            body.tablet-mode .text-\[20px\] {
+                font-size: calc(20px * var(--tablet-scale));
+            }
+            body.tablet-mode .sm\:h-\[200px\] {
+                height: calc(200px * var(--tablet-scale));
+            }
+            body.tablet-mode .sm\:text-\[14px\] {
+                font-size: calc(14px * var(--tablet-scale));
+            }
             body.tablet-mode .option-card {
                 border-radius: calc(10px * var(--tablet-scale));
                 padding: calc(9px * var(--tablet-scale)) calc(12px * var(--tablet-scale));
@@ -624,6 +667,13 @@
                 <section id="view-intro" class="p-3.5 sm:p-4 flex flex-col h-full flex-1 min-h-0 overflow-y-auto screen-scroll">
                     <!-- Top Hero Card -->
                     <div class="space-y-3 flex-1 flex flex-col justify-start">
+                        <!-- 已完成挑戰提示（僅民眾手機、完成後 30 分鐘內顯示） -->
+                        <button id="completedBanner" hidden onclick="viewCompletedResult()" class="w-full glass-card-subtle rounded-xl px-3 py-2.5 border border-emerald-500/50 bg-emerald-950/30 flex items-center justify-between gap-2 text-left cursor-pointer">
+                            <span class="flex items-center gap-2 text-emerald-400 font-bold text-[13.5px]">
+                                <span>✓ 你已完成挑戰</span>
+                            </span>
+                            <span class="text-[13px] font-bold text-emerald-300 flex-shrink-0">查看兌換畫面 ➔</span>
+                        </button>
                         <div class="glass-surface rounded-2xl p-3.5 sm:p-4 hud-bracket-box relative overflow-hidden">
                             <!-- Ambient Corner Beam -->
                             <div class="absolute -right-8 -top-8 w-28 h-28 bg-cyan-500/20 rounded-full blur-2xl pointer-events-none"></div>
@@ -918,7 +968,7 @@
 
                         <!-- Restart Button -->
                         <div class="mt-3 mb-1">
-                            <button onclick="showScreen('intro')" class="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-[14.5px] tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
+                            <button onclick="restartChallenge()" class="w-full h-11 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-200 font-semibold text-[14.5px] tracking-wider border border-cyan-800/40 flex items-center justify-center gap-1.5 cursor-pointer">
                                 <span>&#x21bb;</span>
                                 <span>重新開始挑戰</span>
                             </button>
@@ -934,7 +984,7 @@
                                     客服信箱：
                                     <a href="mailto:futures@yuanta.com" class="underline hover:text-cyan-300 text-[#94a3b8]">futures@yuanta.com</a>
                                 </div>
-                                <div>許可證字號：115年金管期總字第015號</div>
+                                <div>許可證字號：115年金管期總字第020號</div>
                                 <div>
                                     隱私權保護聲明：
                                     <a href="https://www.yuantafutures.com.tw/Privacy" target="_blank" rel="noopener noreferrer" class="underline hover:text-cyan-300 text-[#94a3b8] break-all">https://www.yuantafutures.com.tw/Privacy</a>
@@ -1055,6 +1105,7 @@
                     el.classList.remove("hidden");
                     el.scrollTop = 0;
                     fitTabletScale(); // 平板：確保首頁一屏放得下
+                    updateCompletedBanner();
                 } else if (name === "quiz") {
                     const el = document.getElementById("view-quiz");
                     el.classList.remove("hidden");
@@ -1201,6 +1252,7 @@
                 if (currentQ < quizData.length - 1) {
                     loadQuestion(currentQ + 1);
                 } else {
+                    saveCompletion(); // 民眾手機：記錄完成，供首頁提示條使用
                     showScreen("result");
                 }
             }
@@ -1321,18 +1373,63 @@
                 preloadQuizImages();
             }
 
-            // ================= 80 秒無操作自動返回首頁 =================
-            const IDLE_TIMEOUT_MS = 80000;
-            let idleTimer = null;
+            // ================= 裝置判斷：攤位平板（共用裝置）vs 民眾手機 =================
+            // 平板模式（iPad 等觸控平板）或從主畫面開啟（離線版 App）視為攤位共用裝置
+            function isKioskDevice() {
+                const standalone = window.navigator.standalone === true || window.matchMedia("(display-mode: standalone)").matches;
+                return document.body.classList.contains("tablet-mode") || standalone;
+            }
+
+            // ================= 完成紀錄（僅民眾手機）=================
+            // 完成挑戰後記錄時間；之後重新開啟或頁面被系統重新載入，仍先顯示首頁，
+            // 首頁上方出現「你已完成挑戰｜查看兌換畫面」提示條，30 分鐘後自動消失。
+            // 按「重新開始挑戰」會清除紀錄。
+            const COMPLETION_KEY = "itrader_expo_completed_at";
+            const COMPLETION_TTL_MS = 30 * 60 * 1000;
+
+            function saveCompletion() {
+                if (isKioskDevice()) return; // 共用平板不保留，避免下一位玩家看到
+                try {
+                    localStorage.setItem(COMPLETION_KEY, String(Date.now()));
+                } catch (e) {}
+            }
+            function getCompletion() {
+                try {
+                    const t = Number(localStorage.getItem(COMPLETION_KEY));
+                    if (!t) return null;
+                    if (Date.now() - t > COMPLETION_TTL_MS) {
+                        localStorage.removeItem(COMPLETION_KEY);
+                        return null;
+                    }
+                    return t;
+                } catch (e) {
+                    return null;
+                }
+            }
+            function clearCompletion() {
+                try {
+                    localStorage.removeItem(COMPLETION_KEY);
+                } catch (e) {}
+            }
+            function updateCompletedBanner() {
+                const banner = document.getElementById("completedBanner");
+                if (banner) banner.hidden = isKioskDevice() || !getCompletion();
+            }
+            function viewCompletedResult() {
+                showScreen("result");
+            }
+            function restartChallenge() {
+                clearCompletion();
+                showScreen("intro");
+            }
+
+            // ================= 無操作自動返回首頁（僅攤位平板；民眾手機不啟用）=================
+            const IDLE_TIMEOUT_MS = 80000; // 答題中：80 秒
+            const IDLE_TIMEOUT_RESULT_MS = 180000; // 結算頁：3 分鐘，留時間給核對站
+            let lastActivityAt = Date.now();
 
             function resetIdleTimer() {
-                if (idleTimer) clearTimeout(idleTimer);
-                idleTimer = setTimeout(() => {
-                    const introSection = document.getElementById("view-intro");
-                    if (introSection && introSection.classList.contains("hidden")) {
-                        showScreen("intro");
-                    }
-                }, IDLE_TIMEOUT_MS);
+                lastActivityAt = Date.now();
             }
 
             const activityEvents = ["pointerdown", "touchstart", "mousedown", "keydown", "scroll", "click"];
@@ -1340,7 +1437,21 @@
                 window.addEventListener(evt, resetIdleTimer, { passive: true });
             });
 
-            resetIdleTimer();
+            setInterval(() => {
+                const intro = document.getElementById("view-intro");
+                if (!intro) return;
+                if (!intro.classList.contains("hidden")) {
+                    updateCompletedBanner(); // 首頁：提示條逾時自動消失
+                    return;
+                }
+                if (!isKioskDevice()) return;
+                const onResult = !document.getElementById("view-result").classList.contains("hidden");
+                const limit = onResult ? IDLE_TIMEOUT_RESULT_MS : IDLE_TIMEOUT_MS;
+                if (Date.now() - lastActivityAt >= limit) {
+                    showScreen("intro");
+                    resetIdleTimer();
+                }
+            }, 1000);
 
             // ================= URL 參數導覽與手機滿版支援 =================
             (function initRouteFromUrl() {
@@ -1417,6 +1528,9 @@
                     console.error("URL routing error:", err);
                 }
             })();
+
+            // 載入時依裝置與完成紀錄決定是否顯示首頁提示條
+            updateCompletedBanner();
         </script>
         <!-- ================= 首頁 3D 地球（Three.js）================= -->
         <script type="importmap">
