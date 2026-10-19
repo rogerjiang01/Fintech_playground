@@ -2,7 +2,7 @@
    ・第一次在有網路時開啟：把下列檔案存進快取
    ・之後一律優先從快取讀取，沒有網路也能開
    ・更新內容時：修改 CACHE_VERSION 後重新部署，iPad 連網從主畫面開啟一次即會更新 */
-const CACHE_VERSION = "planb-2026-10-14-v1";
+const CACHE_VERSION = "planb-2026-10-19-v2";
 const FILES = ["index_planb.html", "manifest.webmanifest", "apple-touch-icon.png", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", (event) => {
